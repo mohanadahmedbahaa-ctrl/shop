@@ -1,61 +1,51 @@
-// 1. Import the Product TYPE (not a value) from our data file.
-//    `import type` tells TypeScript this is only used for type-checking,
-//    so it is removed from the final JavaScript bundle.
+// 1. `import type` imports only a TYPE. It's removed from the final JavaScript.
+import { Link } from 'react-router'
+import { useCart } from '../context/CartContext'
 import type { Product } from '../data/products'
+import { formatPrice } from '../utils/formatPrice'
 
-// 2. Describe the PROPS this component accepts.
-//    Props are like function arguments for a component.
-//    Here the parent must pass exactly one prop: `product`, shaped like a Product.
+// 2. PROPS are a component's inputs, like function arguments.
+//    The parent must pass one prop, `product`, shaped like a Product.
 type Props = {
   product: Product
 }
 
-// 3. A component is just a function that returns JSX.
-//    Its name MUST start with a capital letter (ProductCard, not productCard),
-//    otherwise React treats <productCard /> as a plain HTML tag.
-//
-//    `{ product }: Props` is destructuring: React passes one object
-//    (props = { product: {...} }) and we pull `product` straight out of it.
+// 3. A component is a function that returns JSX. The name must start with a capital letter.
+//    `{ product }: Props` DESTRUCTURES the props object: props = { product: {...} }.
 function ProductCard({ product }: Props) {
-  // 4. Return JSX: HTML-like syntax that compiles to JavaScript.
-  //    - Use `className` instead of `class` (`class` is a reserved word in JS).
-  //    - Curly braces { } let you put any JavaScript expression inside JSX.
+  // 4. Get the add function from the cart context (see context/CartContext.ts).
+  //    Before, this button only did console.log. Now it changes real shared state.
+  const { addToCart } = useCart()
+
+  // 5. JSX rules: `className` instead of `class` (class is a JS keyword),
+  //    and { } lets you put any JavaScript expression inside the markup.
   return (
-    // Card wrapper. Tailwind classes:
-    // bg-white = white background, rounded-lg = rounded corners,
-    // shadow = drop shadow, p-4 = padding, flex flex-col = stack children vertically
-    <div className="bg-white rounded-lg shadow p-4 flex flex-col">
-      {/* 5. This is how you write a comment INSIDE JSX: braces + slash-star. */}
+    // h-full + flex flex-col: all cards in a row have the same height
+    <div className="bg-white rounded-lg shadow p-4 flex flex-col h-full">
+      {/* 6. Link to the details page. The template string builds e.g. "/product/3".
+          The `:id` route in App.tsx catches it. */}
+      <Link to={`/product/${product.id}`} className="group">
+        {/* object-cover = crop the image instead of stretching it.
+            group-hover:opacity-90 = dim the image when hovering the whole Link ("group"). */}
+        <img
+          src={product.image}
+          alt={product.title}
+          className="w-full h-48 object-cover rounded group-hover:opacity-90"
+        />
+        <p className="mt-3 text-xs uppercase text-gray-500">{product.category}</p>
+        <h2 className="text-lg font-semibold group-hover:text-blue-600">{product.title}</h2>
+      </Link>
 
-      {/* Image: `src` and `alt` come from the product object.
-          w-full = full card width, h-48 = fixed height,
-          object-cover = crop the image instead of stretching it. */}
-      <img
-        src={product.image}
-        alt={product.title}
-        className="w-full h-48 object-cover rounded"
-      />
+      <p className="text-blue-600 font-bold">{formatPrice(product.price)}</p>
 
-      {/* Category label: small grey uppercase text. */}
-      <p className="mt-3 text-xs uppercase text-gray-500">{product.category}</p>
-
-      {/* Title. */}
-      <h2 className="text-lg font-semibold">{product.title}</h2>
-
-      {/* 6. Price: `.toFixed(2)` is plain JavaScript and always shows
-          2 decimals, so 59 becomes "59.00". Any JS expression works inside { }. */}
-      <p className="text-blue-600 font-bold">${product.price.toFixed(2)}</p>
-
-      {/* 7. Event handling: `onClick` takes a FUNCTION. It doesn't take a function call.
-          ✅ onClick={() => doSomething()} runs when the button is clicked.
-          ❌ onClick={doSomething()} runs immediately on every render.
-          For now it just logs; in the cart step we'll replace this with real logic.
-          The wrapper's mt-auto pushes the button to the bottom so all cards line up.
-          hover:bg-blue-700 = darker blue when the mouse is over it. */}
+      {/* 7. onClick takes a FUNCTION. It doesn't take a function call.
+          ✅ onClick={() => addToCart(product)} runs on click.
+          ❌ onClick={addToCart(product)} runs immediately on every render.
+          mt-auto pushes the button to the bottom of the card. */}
       <div className="mt-auto pt-4">
         <button
           type="button"
-          onClick={() => console.log('Add to cart:', product.title)}
+          onClick={() => addToCart(product)}
           className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded py-2"
         >
           Add to cart
@@ -65,5 +55,5 @@ function ProductCard({ product }: Props) {
   )
 }
 
-// 8. Export it so other files (App.tsx) can import and use it.
+// 8. A default export, so it's imported without braces: import ProductCard from '...'
 export default ProductCard
