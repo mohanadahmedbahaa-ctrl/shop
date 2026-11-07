@@ -3,23 +3,14 @@ import { Link } from 'react-router'
 import ProductGrid from '../components/product/ProductGrid'
 import { buttonStyles } from '../components/ui/buttonStyles'
 import Container from '../components/ui/Container'
-import { categories, categoryInfo, products, type Category } from '../data/products'
+import { useProducts } from '../context/ProductsContext'
+import { categories, categoryInfo, type Category } from '../data/products'
 import { FREE_SHIPPING_THRESHOLD, getDiscountPercent } from '../utils/pricing'
 
-// 1. Data for this page is computed ONCE at module level (outside the component),
-//    because it only depends on the static product list, not on state or props.
-const findProduct = (id: number) => products.find((p) => p.id === id)
-
-// Hand-picked "cover" product for each category tile.
+// Hand-picked "cover" product for each category tile (ids from the seeded catalog).
+// If one is ever deleted, the tile just shows no image (see `cover &&` below).
 const categoryCovers: Record<Category, number> = { home: 3, kitchen: 6, fashion: 15, accessories: 18, sport: 25 }
-
-const heroProducts = [5, 19, 21].map(findProduct)
-const bestSellers = products.toSorted((a, b) => b.rating - a.rating).slice(0, 4)
-const saleProducts = products
-  .filter((p) => getDiscountPercent(p) !== null)
-  .toSorted((a, b) => (getDiscountPercent(b) ?? 0) - (getDiscountPercent(a) ?? 0))
-  .slice(0, 4)
-const maxDiscount = Math.max(...products.map((p) => getDiscountPercent(p) ?? 0))
+const heroIds = [5, 19, 21]
 
 const perks = [
   { icon: Truck, title: 'Free shipping', text: `On orders over $${FREE_SHIPPING_THRESHOLD}` },
@@ -43,6 +34,21 @@ function SectionHeading({ title, linkTo, linkLabel }: { title: string; linkTo: s
 }
 
 function HomePage() {
+  // 1. Phase 1 computed these at module level from a static array. The products now come from
+  //    the API (they can change while the app runs), so they're derived INSIDE the component,
+  //    on each render. 27 products = microseconds; useMemo would only matter for big lists.
+  const { products } = useProducts()
+  const findProduct = (id: number) => products.find((p) => p.id === id)
+
+  const heroProducts = heroIds.map(findProduct)
+  const bestSellers = products.toSorted((a, b) => b.rating - a.rating).slice(0, 4)
+  const saleProducts = products
+    .filter((p) => getDiscountPercent(p) !== null)
+    .toSorted((a, b) => (getDiscountPercent(b) ?? 0) - (getDiscountPercent(a) ?? 0))
+    .slice(0, 4)
+  // `0` in the list: Math.max() of an EMPTY list is -Infinity, which would print "Up to -Infinity% off".
+  const maxDiscount = Math.max(0, ...products.map((p) => getDiscountPercent(p) ?? 0))
+
   return (
     <>
       {/* React 19: a <title> anywhere in a component is moved into <head> automatically. */}

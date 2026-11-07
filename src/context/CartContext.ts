@@ -26,6 +26,8 @@ export type CartContextValue = {
   items: CartItem[]
   itemCount: number
   subtotal: number
+  // 'loading' while a logged-in user's cart is fetched from the server.
+  status: 'loading' | 'ready'
   // `quantity?: number` is an optional parameter (defaults to 1 in the provider)
   addToCart: (product: Product, quantity?: number) => void
   updateQuantity: (productId: number, quantity: number) => void

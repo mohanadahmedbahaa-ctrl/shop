@@ -1,10 +1,10 @@
 import { CircleCheck } from 'lucide-react'
 import { Link, Navigate, useLocation } from 'react-router'
 import OrderSummary from '../components/cart/OrderSummary'
+import OrderItemList from '../components/orders/OrderItemList'
 import { buttonStyles } from '../components/ui/buttonStyles'
 import Container from '../components/ui/Container'
 import type { Order } from '../types/order'
-import { formatPrice } from '../utils/formatPrice'
 import { shippingOptions } from '../utils/pricing'
 
 function OrderConfirmationPage() {
@@ -30,7 +30,7 @@ function OrderConfirmationPage() {
         <CircleCheck className="mx-auto size-14 text-emerald-600" aria-hidden="true" />
         <h1 className="mt-6 text-3xl font-semibold tracking-tight sm:text-4xl">Thank you, {address.firstName}!</h1>
         <p className="mt-3 text-stone-600">
-          Order <strong className="font-semibold text-stone-900">#{order.id}</strong> was placed on {placedOn}.
+          Order <strong className="font-semibold text-stone-900">{order.orderNumber}</strong> was placed on {placedOn}.
         </p>
         <p className="mt-1 text-sm text-stone-500">
           A confirmation would be sent to {order.email} (this is a demo, so no email is sent).
@@ -64,24 +64,19 @@ function OrderConfirmationPage() {
 
       <div className="mt-6">
         <OrderSummary totals={order.totals} title="Order details">
-          <ul className="space-y-4 border-t border-stone-200 pt-6">
-            {order.items.map(({ product, quantity }) => (
-              <li key={product.id} className="flex items-center gap-4">
-                <img src={product.images[0]} alt="" className="size-14 rounded-lg bg-white object-contain p-1" />
-                <div className="flex-1 text-sm">
-                  <p className="font-medium">{product.title}</p>
-                  <p className="text-stone-500">Qty {quantity}</p>
-                </div>
-                <p className="text-sm tabular-nums">{formatPrice(product.price * quantity)}</p>
-              </li>
-            ))}
-          </ul>
+          <div className="border-t border-stone-200 pt-6">
+            <OrderItemList items={order.items} />
+          </div>
         </OrderSummary>
       </div>
 
-      <div className="mt-10 text-center">
+      <div className="mt-10 flex flex-wrap justify-center gap-3">
         <Link to="/shop" className={buttonStyles('primary', 'lg')}>
           Continue shopping
+        </Link>
+        {/* The order is saved in the database now, so it can be found again later. */}
+        <Link to="/account/orders" className={buttonStyles('secondary', 'lg')}>
+          View my orders
         </Link>
       </div>
     </Container>

@@ -10,7 +10,8 @@ import Price from '../components/ui/Price'
 import QuantitySelector from '../components/ui/QuantitySelector'
 import Rating from '../components/ui/Rating'
 import { useCart } from '../context/CartContext'
-import { categoryInfo, products, type Product } from '../data/products'
+import { useProducts } from '../context/ProductsContext'
+import { categoryInfo, type Product } from '../data/products'
 import { formatPrice } from '../utils/formatPrice'
 import { FREE_SHIPPING_THRESHOLD, getDiscountPercent } from '../utils/pricing'
 import NotFoundPage from './NotFoundPage'
@@ -18,6 +19,7 @@ import NotFoundPage from './NotFoundPage'
 // 1. The ROUTE component only finds the product from the URL (/product/:id).
 function ProductPage() {
   const { id } = useParams() // URL params are always strings: "3"
+  const { products } = useProducts()
   const product = products.find((p) => p.id === Number(id))
 
   if (!product) {
@@ -32,6 +34,7 @@ function ProductPage() {
 
 function ProductDetails({ product }: { product: Product }) {
   const { addToCart } = useCart()
+  const { products } = useProducts()
   const [quantity, setQuantity] = useState(1)
 
   const discount = getDiscountPercent(product)
@@ -66,6 +69,10 @@ function ProductDetails({ product }: { product: Product }) {
             <div className="mt-4">
               <Rating rating={product.rating} reviewCount={product.reviewCount} size="md" />
             </div>
+            {/* Marketplace: products added by sellers show who sells them (sellerName comes from a SQL JOIN). */}
+            <p className="mt-2 text-sm text-stone-500">
+              Sold by <span className="font-medium text-stone-700">{product.sellerName ?? 'Oakline'}</span>
+            </p>
 
             <div className="mt-6 flex items-center gap-3">
               <Price product={product} size="lg" />

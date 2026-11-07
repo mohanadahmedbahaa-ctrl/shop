@@ -1,12 +1,15 @@
-import { Lock } from 'lucide-react'
+import { LoaderCircle, Lock } from 'lucide-react'
 import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { Navigate } from 'react-router'
+import { apiFetch } from '../api/client'
 import OrderSummary from '../components/cart/OrderSummary'
 import Breadcrumbs from '../components/ui/Breadcrumbs'
 import Button from '../components/ui/Button'
 import Container from '../components/ui/Container'
 import TextField from '../components/ui/TextField'
+import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
+import { useProducts } from '../context/ProductsContext'
 import type { Order, ShippingAddress } from '../types/order'
 import { cn } from '../utils/cn'
 import { formatPrice } from '../utils/formatPrice'
@@ -32,7 +35,7 @@ const initialForm: CheckoutForm = {
 const countries = ['United States', 'Canada', 'United Kingdom', 'Germany', 'France', 'Egypt', 'United Arab Emirates', 'Saudi Arabia']
 
 // 2. VALIDATION as a pure function: form in, errors out. Easy to test and reuse.
-//    (Always validate on the server too in Phase 2. Users can bypass frontend checks.)
+//    The server validates everything AGAIN (routes/orders.ts): users can bypass frontend checks.
 function validate(form: CheckoutForm): FormErrors {
   const errors: FormErrors = {}
   if (!/^\S+@\S+\.\S+$/.test(form.email)) errors.email = 'Enter a valid email address'
@@ -45,12 +48,17 @@ function validate(form: CheckoutForm): FormErrors {
 }
 
 function CheckoutPage() {
-  const { items, subtotal, clearCart } = useCart()
-  const [form, setForm] = useState<CheckoutForm>(initialForm)
+  const { items, subtotal, clearCart, status: cartStatus } = useCart()
+  const { refresh: refreshProducts } = useProducts()
+  const { user } = useAuth()
+  // Logged in? Start with your account's email filled in (lazy initial state, runs once).
+  const [form, setForm] = useState<CheckoutForm>(() => ({ ...initialForm, email: user?.email ?? '' }))
   const [errors, setErrors] = useState<FormErrors>({})
   const [shippingMethod, setShippingMethod] = useState<ShippingMethod>('standard')
   // Set once the order is placed. The redirect below then happens declaratively.
   const [placedOrder, setPlacedOrder] = useState<Order | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+  const [serverError, setServerError] = useState<string | null>(null)
 
   // 3. RULES OF HOOKS: every hook (useState, useCart...) must run on EVERY render, in the
   //    same order. That's why these early returns come AFTER all the hooks above, never before.
@@ -62,6 +70,16 @@ function CheckoutPage() {
   //    handler let the empty-cart redirect win.)
   if (placedOrder) {
     return <Navigate to="/order-confirmation" state={{ order: placedOrder }} replace />
+  }
+  // A logged-in user's cart is still coming from the server (e.g. after a page refresh):
+  // wait, or the empty-cart check below would wrongly send them to /cart.
+  if (cartStatus === 'loading') {
+    return (
+      <div role="status" className="flex justify-center py-32 text-stone-500">
+        <LoaderCircle className="size-8 animate-spin" aria-hidden="true" />
+        <span className="sr-only">Loading your cart</span>
+      </div>
+    )
   }
   if (items.length === 0) {
     return <Navigate to="/cart" replace />
@@ -78,10 +96,11 @@ function CheckoutPage() {
     setErrors((prev) => ({ ...prev, [name]: undefined }))
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const found = validate(form)
     setErrors(found)
+    setServerError(null)
 
     const firstInvalid = Object.keys(found)[0]
     if (firstInvalid) {
@@ -92,21 +111,35 @@ function CheckoutPage() {
 
     // 5. Rest destructuring: take `email` out, put every other field into `shippingAddress`.
     const { email, ...shippingAddress } = form
-    const order: Order = {
-      id: `OAK-${Date.now().toString(36).toUpperCase()}`,
-      email,
-      shippingAddress,
-      shippingMethod,
-      items,
-      totals,
-      placedAt: new Date().toISOString(),
-    }
 
-    // 6. Both updates happen in the same re-render: the <Navigate> above then passes the
-    //    order to the next page through navigation `state` (no URL params needed).
-    //    In Phase 2 you'll POST `order` to your API here first, and use the server's response.
-    setPlacedOrder(order)
-    clearCart()
+    // 6. SEND THE ORDER TO THE API. Notice what we DON'T send: prices or totals.
+    //    Only product ids and quantities; the server looks up the real prices, checks the stock,
+    //    and computes the totals itself (a user could edit any price in the browser).
+    setSubmitting(true)
+    try {
+      const order = await apiFetch<Order>('/api/orders', {
+        method: 'POST',
+        body: {
+          email,
+          shippingAddress,
+          shippingMethod,
+          items: items.map(({ product, quantity }) => ({ productId: product.id, quantity })),
+        },
+      })
+      // 7. Both updates happen in the same re-render: the <Navigate> above then passes the
+      //    SERVER's order (real order number, real totals) to the confirmation page through
+      //    navigation `state`. The server already emptied the saved cart; clearCart() empties
+      //    the screen. refreshProducts() re-downloads the catalog because stock just changed.
+      //    `submitting` stays true: this page is about to be left.
+      setPlacedOrder(order)
+      clearCart()
+      refreshProducts()
+    } catch (err) {
+      // e.g. 409 'Only 2 left of "Table Lamp"': the stock changed since the cart was filled.
+      setServerError(err instanceof Error ? err.message : 'Could not place the order')
+      setSubmitting(false)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
   }
 
   return (
@@ -118,6 +151,11 @@ function CheckoutPage() {
       <div className="mt-10 grid gap-12 lg:grid-cols-12">
         {/* noValidate turns off the browser's popups so OUR messages show instead, styled consistently. */}
         <form id="checkout-form" noValidate onSubmit={handleSubmit} className="space-y-10 lg:col-span-7">
+          {serverError && (
+            <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+              {serverError}
+            </p>
+          )}
           <section aria-labelledby="contact-heading">
             <h2 id="contact-heading" className="text-lg font-semibold">
               Contact information
@@ -209,7 +247,7 @@ function CheckoutPage() {
               <Lock className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
               <p>
                 <strong className="font-medium text-stone-900">This is a demo store.</strong> No payment details are
-                collected and nothing is charged. Placing an order just shows the confirmation page.
+                collected and nothing is charged. Your order is saved to your account and the stock is updated.
               </p>
             </div>
           </section>
@@ -233,8 +271,8 @@ function CheckoutPage() {
             </ul>
             {/* 7. The `form` attribute links this button to the <form id="checkout-form"> even
                 though it sits OUTSIDE the form element in the HTML. */}
-            <Button type="submit" form="checkout-form" size="lg" className="w-full">
-              Place order · {formatPrice(totals.total)}
+            <Button type="submit" form="checkout-form" size="lg" className="w-full" disabled={submitting}>
+              {submitting ? 'Placing order…' : `Place order · ${formatPrice(totals.total)}`}
             </Button>
           </OrderSummary>
         </aside>

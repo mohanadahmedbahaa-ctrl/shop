@@ -7,13 +7,13 @@ import ProductGrid from '../components/product/ProductGrid'
 import { buttonStyles } from '../components/ui/buttonStyles'
 import Container from '../components/ui/Container'
 import { useCart } from '../context/CartContext'
-import { products } from '../data/products'
+import { useProducts } from '../context/ProductsContext'
 import { getOrderTotals } from '../utils/pricing'
-
-const popular = products.toSorted((a, b) => b.reviewCount - a.reviewCount).slice(0, 4)
 
 function CartPage() {
   const { items, itemCount, subtotal } = useCart()
+  const { products } = useProducts()
+  const popular = products.toSorted((a, b) => b.reviewCount - a.reviewCount).slice(0, 4)
   // The summary uses the same pricing function as checkout, so the numbers always match.
   const totals = getOrderTotals(subtotal, 'standard')
 

@@ -1,11 +1,7 @@
 import type { ReactNode } from 'react'
-import { categories, categoryInfo, products } from '../../data/products'
+import { useProducts } from '../../context/ProductsContext'
+import { categories, categoryInfo } from '../../data/products'
 import { priceRanges, type ProductFilters } from '../../utils/productFilters'
-
-// How many products are in each category, for the "(5)" counts next to each option.
-const categoryCounts = Object.fromEntries(
-  categories.map((c) => [c, products.filter((p) => p.category === c).length]),
-)
 
 type Props = {
   filters: ProductFilters
@@ -44,6 +40,13 @@ function RadioOption(props: { name: string; label: string; count?: number; check
 }
 
 function FilterPanel({ filters, onChange }: Props) {
+  // How many products are in each category, for the "(5)" counts next to each option.
+  // Computed inside the component now, because the products come from the API.
+  const { products } = useProducts()
+  const categoryCounts = Object.fromEntries(
+    categories.map((c) => [c, products.filter((p) => p.category === c).length]),
+  )
+
   return (
     <div>
       <FilterGroup legend="Category">

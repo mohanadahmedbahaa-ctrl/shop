@@ -6,7 +6,8 @@ import FilterPanel from '../components/shop/FilterPanel'
 import Breadcrumbs from '../components/ui/Breadcrumbs'
 import Button from '../components/ui/Button'
 import Container from '../components/ui/Container'
-import { categoryInfo, products } from '../data/products'
+import { useProducts } from '../context/ProductsContext'
+import { categoryInfo } from '../data/products'
 import { applyFilters, priceRanges, readFilters, sortOptions } from '../utils/productFilters'
 
 function ShopPage() {
@@ -14,6 +15,7 @@ function ShopPage() {
   //    instead of useState. Benefits: you can share or bookmark a filtered page, the back
   //    button undoes a filter, and a refresh keeps your filters.
   const [searchParams, setSearchParams] = useSearchParams()
+  const { products } = useProducts() // the catalog from the API (loaded before this page renders)
   const filters = readFilters(searchParams)
   const results = applyFilters(products, filters)
 

@@ -1,6 +1,7 @@
-import { Menu, Search, ShoppingBag, X } from 'lucide-react'
+import { Menu, Search, ShoppingBag, UserRound, X } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useLocation, useSearchParams } from 'react-router'
+import { useAuth } from '../../context/AuthContext'
 import { useCart } from '../../context/CartContext'
 import { categories, categoryInfo } from '../../data/products'
 import { cn } from '../../utils/cn'
@@ -24,6 +25,7 @@ const navItems: NavItem[] = [
 
 function Header() {
   const { itemCount, openCart } = useCart()
+  const { user } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
   const { pathname } = useLocation()
   const [searchParams] = useSearchParams()
@@ -82,6 +84,17 @@ function Header() {
           >
             <Search className="size-5" aria-hidden="true" />
           </button>
+
+          {/* Account: logged out -> /login, logged in -> /account (with a dot showing you're signed in) */}
+          <Link
+            to={user ? '/account' : '/login'}
+            onClick={closeMenu}
+            aria-label={user ? `My account (${user.name})` : 'Log in'}
+            className="relative grid size-10 place-items-center rounded-full hover:bg-stone-100"
+          >
+            <UserRound className="size-5" aria-hidden="true" />
+            {user && <span className="absolute right-2 top-2 size-2 rounded-full bg-brand-600 ring-2 ring-white" aria-hidden="true" />}
+          </Link>
 
           <button
             type="button"

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useId, type ReactNode } from 'react'
 import { formatPrice } from '../../utils/formatPrice'
 import type { OrderTotals } from '../../utils/pricing'
 
@@ -12,9 +12,12 @@ type Props = {
 // "Composition": the summary doesn't know which button goes under it.
 // The cart page passes a Checkout link; checkout passes a Place-order button.
 function OrderSummary({ totals, title = 'Order summary', shippingNote, children }: Props) {
+  // useId: a unique id per summary. The "My orders" page shows several at once, and a fixed
+  // id="summary-heading" would be duplicated (ids must be unique, or aria-labelledby breaks).
+  const headingId = useId()
   return (
-    <section aria-labelledby="summary-heading" className="rounded-2xl bg-stone-50 p-6">
-      <h2 id="summary-heading" className="text-lg font-semibold">
+    <section aria-labelledby={headingId} className="rounded-2xl bg-stone-50 p-6">
+      <h2 id={headingId} className="text-lg font-semibold">
         {title}
       </h2>
 
