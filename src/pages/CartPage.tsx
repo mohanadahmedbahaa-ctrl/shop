@@ -1,124 +1,78 @@
-import { useState } from 'react'
+import { Lock, ShoppingBag } from 'lucide-react'
 import { Link } from 'react-router'
+import CartLineItem from '../components/cart/CartLineItem'
+import FreeShippingProgress from '../components/cart/FreeShippingProgress'
+import OrderSummary from '../components/cart/OrderSummary'
+import ProductGrid from '../components/product/ProductGrid'
+import { buttonStyles } from '../components/ui/buttonStyles'
+import Container from '../components/ui/Container'
 import { useCart } from '../context/CartContext'
-import { formatPrice } from '../utils/formatPrice'
+import { products } from '../data/products'
+import { getOrderTotals } from '../utils/pricing'
+
+const popular = products.toSorted((a, b) => b.reviewCount - a.reviewCount).slice(0, 4)
 
 function CartPage() {
-  // 1. Everything comes from context. This page never owns the cart; it only shows and changes it.
-  const { items, totalItems, totalPrice, updateQuantity, removeFromCart, clearCart } = useCart()
-
-  // 2. LOCAL state that only this page cares about: did the user just "check out"?
-  //    Rule of thumb: keep state as close as possible to where it's used.
-  const [orderPlaced, setOrderPlaced] = useState(false)
-
-  function handleCheckout() {
-    // There's no backend yet (that's Phase 2!), so checkout just empties the cart.
-    clearCart()
-    setOrderPlaced(true)
-  }
-
-  // 3. Two early returns for the special cases: order placed, or empty cart.
-  if (orderPlaced) {
-    return (
-      <div className="text-center py-16">
-        <h1 className="text-3xl font-bold mb-4">Thank you for your order! 🎉</h1>
-        <p className="text-gray-600 mb-6">This is a demo shop, so nothing was charged.</p>
-        <Link to="/" className="text-blue-600 hover:underline">
-          Continue shopping
-        </Link>
-      </div>
-    )
-  }
+  const { items, itemCount, subtotal } = useCart()
+  // The summary uses the same pricing function as checkout, so the numbers always match.
+  const totals = getOrderTotals(subtotal, 'standard')
 
   if (items.length === 0) {
     return (
-      <div className="text-center py-16">
-        <h1 className="text-3xl font-bold mb-4">Your cart is empty</h1>
-        <Link to="/" className="text-blue-600 hover:underline">
-          Browse products
-        </Link>
-      </div>
+      <Container className="pt-16">
+        <title>Your cart · Oakline</title>
+        <div className="flex flex-col items-center text-center">
+          <div className="grid size-16 place-items-center rounded-full bg-stone-100">
+            <ShoppingBag className="size-7 text-stone-400" aria-hidden="true" />
+          </div>
+          <h1 className="mt-6 text-3xl font-semibold tracking-tight">Your cart is empty</h1>
+          <p className="mt-2 text-stone-600">Looks like you haven't added anything yet.</p>
+          <Link to="/shop" className={buttonStyles('primary', 'lg', 'mt-8')}>
+            Start shopping
+          </Link>
+        </div>
+
+        {/* An empty cart is a good place to suggest products instead of a dead end. */}
+        <section className="mt-24">
+          <h2 className="mb-8 text-2xl font-semibold tracking-tight">Popular right now</h2>
+          <ProductGrid products={popular} />
+        </section>
+      </Container>
     )
   }
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold mb-6">Your cart ({totalItems} items)</h1>
+    <Container className="pt-10">
+      <title>{`Your cart (${itemCount}) · Oakline`}</title>
+      <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Shopping cart</h1>
 
-      {/* lg:grid-cols-3 + lg:col-span-2: on large screens items take 2/3, summary 1/3 */}
-      <div className="grid lg:grid-cols-3 gap-8">
-        <ul className="lg:col-span-2 flex flex-col gap-4">
-          {/* 4. Destructuring inside the .map() parameter: ({ product, quantity }) */}
-          {items.map(({ product, quantity }) => (
-            <li key={product.id} className="flex gap-4 bg-white rounded-lg shadow p-4">
-              <img
-                src={product.image}
-                alt={product.title}
-                className="w-24 h-24 object-cover rounded"
-              />
+      {/* 12-column grid: items take 7 columns, the summary 5, on large screens. */}
+      <div className="mt-10 grid gap-12 lg:grid-cols-12">
+        <section aria-label="Items in your cart" className="lg:col-span-7">
+          <ul className="divide-y divide-stone-200 border-y border-stone-200">
+            {items.map((item) => (
+              <CartLineItem key={item.product.id} item={item} />
+            ))}
+          </ul>
+          <Link to="/shop" className="mt-6 inline-block text-sm font-medium text-stone-700 hover:text-stone-900">
+            ← Continue shopping
+          </Link>
+        </section>
 
-              <div className="flex-1">
-                <Link to={`/product/${product.id}`} className="font-semibold hover:text-blue-600">
-                  {product.title}
-                </Link>
-                <p className="text-gray-500">{formatPrice(product.price)} each</p>
-
-                {/* 5. Quantity controls. Each button calls the context function with a new number.
-                    Going to 0 removes the item (see updateQuantity in CartProvider.tsx). */}
-                <div className="flex items-center gap-3 mt-2">
-                  <button
-                    type="button"
-                    onClick={() => updateQuantity(product.id, quantity - 1)}
-                    aria-label={`Decrease ${product.title} quantity`}
-                    className="w-8 h-8 rounded bg-gray-200 hover:bg-gray-300"
-                  >
-                    −
-                  </button>
-                  <span className="w-6 text-center">{quantity}</span>
-                  <button
-                    type="button"
-                    onClick={() => updateQuantity(product.id, quantity + 1)}
-                    aria-label={`Increase ${product.title} quantity`}
-                    className="w-8 h-8 rounded bg-gray-200 hover:bg-gray-300"
-                  >
-                    +
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => removeFromCart(product.id)}
-                    className="ml-4 text-sm text-red-600 hover:underline"
-                  >
-                    Remove
-                  </button>
-                </div>
-              </div>
-
-              {/* Line total: price × quantity, calculated right here in JSX */}
-              <p className="font-bold">{formatPrice(product.price * quantity)}</p>
-            </li>
-          ))}
-        </ul>
-
-        {/* 6. Order summary. `h-fit` stops it stretching to the height of the list. */}
-        <aside className="bg-white rounded-lg shadow p-6 h-fit flex flex-col gap-4">
-          <h2 className="text-xl font-bold">Order summary</h2>
-          <div className="flex justify-between">
-            <span>Total</span>
-            <span className="font-bold">{formatPrice(totalPrice)}</span>
-          </div>
-          <button
-            type="button"
-            onClick={handleCheckout}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded py-3"
-          >
-            Checkout
-          </button>
-          <button type="button" onClick={clearCart} className="text-sm text-gray-500 hover:underline">
-            Clear cart
-          </button>
-        </aside>
+        <div className="space-y-4 lg:sticky lg:top-24 lg:col-span-5 lg:self-start">
+          <FreeShippingProgress subtotal={subtotal} />
+          <OrderSummary totals={totals} shippingNote="standard">
+            <Link to="/checkout" className={buttonStyles('primary', 'lg', 'w-full')}>
+              Proceed to checkout
+            </Link>
+            <p className="mt-4 flex items-center justify-center gap-1.5 text-xs text-stone-500">
+              <Lock className="size-3.5" aria-hidden="true" />
+              Secure checkout
+            </p>
+          </OrderSummary>
+        </div>
       </div>
-    </div>
+    </Container>
   )
 }
 

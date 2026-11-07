@@ -1,97 +1,118 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { Product } from '../data/products'
-import { CartContext } from './CartContext'
-import type { CartItem } from './CartContext'
+import { products, type Product } from '../data/products'
+import { CartContext, type CartItem, type CartLine } from './CartContext'
 
-const STORAGE_KEY = 'shop-cart'
+const STORAGE_KEY = 'oakline-cart'
 
-// 1. Read the saved cart from localStorage (same idea as your portfolio's theme toggle).
-//    try/catch, because localStorage can be blocked or hold broken JSON.
-function loadCart(): CartItem[] {
+// 1. A Map gives fast lookup by id: productsById.get(3) instead of searching the array each time.
+const productsById = new Map(products.map((p) => [p.id, p]))
+
+// 2. Load the saved cart. localStorage data is UNTRUSTED (old format, edited by hand...),
+//    so we validate each line and drop anything that isn't a real product.
+function loadCart(): CartLine[] {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    return saved ? (JSON.parse(saved) as CartItem[]) : []
+    const saved: unknown = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]')
+    if (!Array.isArray(saved)) return []
+    return saved.filter(
+      (line): line is CartLine =>
+        typeof line?.productId === 'number' &&
+        typeof line?.quantity === 'number' &&
+        line.quantity > 0 &&
+        productsById.has(line.productId),
+    )
   } catch {
     return []
   }
 }
 
-// 2. `children` is a special prop: whatever you put BETWEEN the tags,
-//    e.g. <CartProvider><App /></CartProvider>, so here children = <App />.
-//    ReactNode is the type for "anything React can render".
 type Props = {
   children: ReactNode
 }
 
 export function CartProvider({ children }: Props) {
-  // 3. useState = data that, when changed, re-renders the components that use it.
-  //    It returns [currentValue, setterFunction].
-  //    Passing a FUNCTION (loadCart) instead of loadCart() is "lazy initialization":
-  //    React calls it only once, on the first render, not on every render.
-  const [items, setItems] = useState<CartItem[]>(loadCart)
+  // 3. Lazy initial state: React calls loadCart only once, on the first render.
+  const [lines, setLines] = useState<CartLine[]>(loadCart)
+  const [isCartOpen, setIsCartOpen] = useState(false)
 
-  // 4. useEffect runs AFTER render. The [items] array is the DEPENDENCY list:
-  //    "run this again every time `items` changes". Here it saves the cart.
+  // 4. Save the cart whenever `lines` changes (useEffect runs after render).
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(lines))
     } catch {
-      // Storage full or blocked: the cart still works, it just won't be saved.
+      // Storage blocked or full: the cart still works for this visit.
     }
-  }, [items])
+  }, [lines])
 
-  // 5. IMMUTABILITY: never change state directly (no items.push(...)).
-  //    Always build a NEW array/object and pass it to the setter.
-  //    React compares old and new by reference; if you mutate, it may not re-render.
-  //
-  //    setItems(prev => ...) is the "updater" form: `prev` is always the latest state,
-  //    which is safer than using `items` when the new value depends on the old one.
-  function addToCart(product: Product) {
-    setItems((prev) => {
-      const existing = prev.find((item) => item.product.id === product.id)
+  // 5. IMMUTABLE updates: always return a NEW array, never push or mutate.
+  //    The updater form setLines(prev => ...) always uses the latest state.
+  //    Math.min(..., product.stock) means you can't add more than is in stock.
+  function addToCart(product: Product, quantity = 1) {
+    setLines((prev) => {
+      const existing = prev.find((line) => line.productId === product.id)
       if (existing) {
-        // Already in the cart: copy every item, but +1 the matching one.
-        return prev.map((item) =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + 1 } // spread = copy, then override quantity
-            : item,
+        return prev.map((line) =>
+          line.productId === product.id
+            ? { ...line, quantity: Math.min(line.quantity + quantity, product.stock) }
+            : line,
         )
       }
-      // Not in the cart yet: new array = old items + the new one.
-      return [...prev, { product, quantity: 1 }]
+      return [...prev, { productId: product.id, quantity: Math.min(quantity, product.stock) }]
     })
+    // Good e-commerce UX: show the user what happened by opening the cart drawer.
+    setIsCartOpen(true)
   }
 
-  // .filter() returns a NEW array without the removed product.
   function removeFromCart(productId: number) {
-    setItems((prev) => prev.filter((item) => item.product.id !== productId))
+    setLines((prev) => prev.filter((line) => line.productId !== productId))
   }
 
   function updateQuantity(productId: number, quantity: number) {
+    const stock = productsById.get(productId)?.stock ?? 0
     if (quantity < 1) {
-      removeFromCart(productId) // going below 1 removes the line
+      removeFromCart(productId)
       return
     }
-    setItems((prev) =>
-      prev.map((item) => (item.product.id === productId ? { ...item, quantity } : item)),
+    setLines((prev) =>
+      prev.map((line) =>
+        line.productId === productId ? { ...line, quantity: Math.min(quantity, stock) } : line,
+      ),
     )
   }
 
   function clearCart() {
-    setItems([])
+    setLines([])
   }
 
-  // 6. DERIVED values: calculated from state on every render, NOT stored in their own useState.
-  //    Storing them separately could get out of sync. Rule: don't duplicate state.
-  //    .reduce() boils an array down to one value; 0 is the starting total.
-  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0)
-  const totalPrice = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
+  // 6. useCallback keeps the SAME function between renders.
+  //    The drawer uses closeCart inside a useEffect dependency list. Without useCallback,
+  //    a new function every render would re-run that effect on every cart change.
+  const openCart = useCallback(() => setIsCartOpen(true), [])
+  const closeCart = useCallback(() => setIsCartOpen(false), [])
 
-  // 7. The Provider makes `value` available to every component inside it.
+  // 7. DERIVED data, calculated on each render. Not stored in state, so it can't get out of sync.
+  //    flatMap: return [item] to keep a line, or [] to drop it (a product that no longer exists).
+  const items: CartItem[] = lines.flatMap((line) => {
+    const product = productsById.get(line.productId)
+    return product ? [{ product, quantity: line.quantity }] : []
+  })
+  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
+  const subtotal = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
+
   return (
     <CartContext.Provider
-      value={{ items, totalItems, totalPrice, addToCart, removeFromCart, updateQuantity, clearCart }}
+      value={{
+        items,
+        itemCount,
+        subtotal,
+        addToCart,
+        updateQuantity,
+        removeFromCart,
+        clearCart,
+        isCartOpen,
+        openCart,
+        closeCart,
+      }}
     >
       {children}
     </CartContext.Provider>

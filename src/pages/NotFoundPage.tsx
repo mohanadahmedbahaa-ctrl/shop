@@ -1,15 +1,30 @@
 import { Link } from 'react-router'
+import { buttonStyles } from '../components/ui/buttonStyles'
+import Container from '../components/ui/Container'
 
-// Shown for any URL that doesn't match a route (see path="*" in App.tsx).
-function NotFoundPage() {
+// DEFAULT PROPS via destructuring: used for unknown URLs ("*" route) with the defaults,
+// and by ProductPage with a custom title and message.
+type Props = {
+  title?: string
+  message?: string
+}
+
+function NotFoundPage({ title = 'Page not found', message = "Sorry, we couldn't find the page you're looking for." }: Props) {
   return (
-    <div className="text-center py-16">
-      <h1 className="text-5xl font-bold text-blue-600 mb-4">404</h1>
-      <p className="text-gray-600 mb-6">This page doesn't exist.</p>
-      <Link to="/" className="text-blue-600 hover:underline">
-        Go to the shop
-      </Link>
-    </div>
+    <Container className="py-24 text-center">
+      <title>{`${title} · Oakline`}</title>
+      <p className="text-sm font-semibold text-brand-700">404</p>
+      <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">{title}</h1>
+      <p className="mx-auto mt-4 max-w-md text-stone-600">{message}</p>
+      <div className="mt-10 flex justify-center gap-3">
+        <Link to="/" className={buttonStyles('primary', 'lg')}>
+          Go home
+        </Link>
+        <Link to="/shop" className={buttonStyles('secondary', 'lg')}>
+          Browse products
+        </Link>
+      </div>
+    </Container>
   )
 }
 
