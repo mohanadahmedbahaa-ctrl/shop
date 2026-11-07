@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { apiFetch } from '../api/client'
 import type { Product } from '../data/products'
@@ -65,20 +65,9 @@ function loadAccountCart(userId: number): Promise<CartLine[]> {
   return request
 }
 
-// 2. THE KEY TRICK: when the user logs in or out, `key` changes, so React throws away the old
-//    CartStore and mounts a fresh one with fresh state. No need to "reset" anything by hand,
-//    and the guest's and the account's carts can never mix by accident.
-//    (Same trick as <ProductDetails key={product.id}> on the product page.)
 export function CartProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
-  return (
-    <CartStore key={user ? `user-${user.id}` : 'guest'} userId={user?.id ?? null}>
-      {children}
-    </CartStore>
-  )
-}
-
-function CartStore({ userId, children }: { userId: number | null; children: ReactNode }) {
+  const userId = user?.id ?? null
   // The catalog comes from the API (ProductsProvider wraps this provider).
   // A Map gives fast lookup by id; useMemo rebuilds it only when `products` changes.
   const { products } = useProducts()
@@ -89,6 +78,28 @@ function CartStore({ userId, children }: { userId: number | null; children: Reac
   const [lines, setLines] = useState<CartLine[]>(() => (userId ? [] : loadGuestCart()))
   const [status, setStatus] = useState<'loading' | 'ready'>(userId ? 'loading' : 'ready')
   const [isCartOpen, setIsCartOpen] = useState(false)
+
+  // 2. RESET THE CART WHEN THE USER CHANGES (login or logout).
+  //    This is React's documented pattern for "reset state when a prop changes": remember the
+  //    previous value in state, and if it differs, set the new state DURING render. React then
+  //    re-renders immediately, before anything is shown.
+  //    LESSON (a bug I shipped first): I used to put a `key` on this provider instead. A key
+  //    change remounts the component AND EVERYTHING INSIDE IT, and this provider wraps the
+  //    whole app. So every login/logout destroyed every page's state mid-action (signup lost
+  //    its navigation and ended on the wrong page). Use `key` only on small subtrees.
+  const [prevUserId, setPrevUserId] = useState(userId)
+  if (userId !== prevUserId) {
+    setPrevUserId(userId)
+    setLines(userId ? [] : loadGuestCart())
+    setStatus(userId ? 'loading' : 'ready')
+    setIsCartOpen(false)
+  }
+
+  // Always holds the CURRENT user id, for async callbacks (see sync() below).
+  const userIdRef = useRef(userId)
+  useEffect(() => {
+    userIdRef.current = userId
+  }, [userId])
 
   // 4. LOGGED IN: load the account's cart once. If there's a guest cart, merge it in first.
   useEffect(() => {
@@ -123,13 +134,19 @@ function CartStore({ userId, children }: { userId: number | null; children: Reac
   //    The server answers with the whole cart (its version is the truth: it caps quantities at
   //    the real stock), and we replace our state with it. If the request fails, we reload the
   //    server's cart so the screen never shows something that wasn't saved.
+  //    The `forUser` check: if the user logged out while a request was on its way, its answer
+  //    (the old account's cart) must NOT be shown in the guest cart.
   function sync(request: () => Promise<CartLine[]>) {
     if (!userId) return // guests: localStorage only (step 5)
+    const forUser = userId
+    const apply = (serverLines: CartLine[]) => {
+      if (userIdRef.current === forUser) setLines(serverLines)
+    }
     request()
-      .then(setLines)
+      .then(apply)
       .catch(() =>
         apiFetch<CartLine[]>('/api/cart')
-          .then(setLines)
+          .then(apply)
           .catch(() => {}),
       )
   }
