@@ -10,13 +10,11 @@ import { cn } from '../../utils/cn'
 
 type Filter = 'all' | OrderStatus
 
-// /admin/orders: every order, with status filter tabs.
 function AdminOrdersPage() {
   const { data: orders, status, error, reload, setData } = useApiData<Order[]>('/api/orders')
   const [filter, setFilter] = useState<Filter>('all')
 
   const all = orders ?? []
-  // DERIVED: the filtered list and the counts are computed from `orders`, never stored separately.
   const visible = filter === 'all' ? all : all.filter((o) => o.status === filter)
   const countFor = (f: Filter) => (f === 'all' ? all.length : all.filter((o) => o.status === f).length)
   const filters: Filter[] = ['all', ...(Object.keys(orderStatusLabels) as OrderStatus[])]
@@ -44,7 +42,6 @@ function AdminOrdersPage() {
 
       {status === 'ready' && (
         <>
-          {/* Filter "tabs": real buttons with aria-pressed, so screen readers say which is on. */}
           <div className="mt-6 flex flex-wrap gap-2">
             {filters.map((f) => (
               <button

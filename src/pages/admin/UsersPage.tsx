@@ -1,52 +1,27 @@
 import { LoaderCircle } from 'lucide-react'
-import { useEffect, useState, type ChangeEvent } from 'react'
+import { useState, type ChangeEvent } from 'react'
 import { apiFetch } from '../../api/client'
 import Breadcrumbs from '../../components/ui/Breadcrumbs'
 import Container from '../../components/ui/Container'
 import { roleLabels, useAuth, type Role, type User } from '../../context/AuthContext'
+import { useApiData } from '../../hooks/useApiData'
 
 const roles = Object.keys(roleLabels) as Role[]
 
-// /admin/users (admin only): see every account and change its role.
-// This is how moderators and admins are created: nobody can sign up as one.
 function UsersPage() {
   const { user: me } = useAuth()
-  const [users, setUsers] = useState<User[]>([])
-  const [status, setStatus] = useState<'loading' | 'error' | 'ready'>('loading')
+  const { data, status, error, setData } = useApiData<User[]>('/api/users')
+  const users = data ?? []
   const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null)
 
-  // 1. Page-level data fetching: this list is only needed here, so it lives in local state
-  //    (not in a context like the products). Same `ignore` pattern as ProductsProvider.
-  useEffect(() => {
-    let ignore = false
-    apiFetch<User[]>('/api/users')
-      .then((data) => {
-        if (!ignore) {
-          setUsers(data)
-          setStatus('ready')
-        }
-      })
-      .catch((err: Error) => {
-        if (!ignore) {
-          setMessage({ type: 'error', text: err.message })
-          setStatus('error')
-        }
-      })
-    return () => {
-      ignore = true
-    }
-  }, [])
-
-  // 2. PATCH the role, then replace that ONE user in the list with the server's answer.
   async function changeRole(target: User, event: ChangeEvent<HTMLSelectElement>) {
     const role = event.target.value as Role
     setMessage(null)
     try {
       const updated = await apiFetch<User>(`/api/users/${target.id}/role`, { method: 'PATCH', body: { role } })
-      setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)))
+      setData((prev) => prev && prev.map((u) => (u.id === updated.id ? updated : u)))
       setMessage({ type: 'success', text: `${updated.name} is now ${roleLabels[updated.role].toLowerCase()}.` })
     } catch (err) {
-      // The <select> is controlled by `users`, which didn't change, so it snaps back on failure.
       setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Could not change the role' })
     }
   }
@@ -60,13 +35,13 @@ function UsersPage() {
         Sellers can add products. Moderators can remove any product. Admins can also change roles.
       </p>
 
-      {/* aria-live: the success/error text is announced when it changes */}
       <div aria-live="polite" className="mt-6">
         {message && (
           <p className={`rounded-lg px-4 py-3 text-sm ${message.type === 'error' ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-800'}`}>
             {message.text}
           </p>
         )}
+        {status === 'error' && <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
       </div>
 
       {status === 'loading' && (
@@ -97,7 +72,6 @@ function UsersPage() {
                   <td className="px-4 py-3 text-stone-600">{u.email}</td>
                   <td className="px-4 py-3 text-stone-600">{new Date(u.createdAt).toLocaleDateString('en-US')}</td>
                   <td className="px-4 py-3">
-                    {/* Disabled for yourself: the server refuses it too (you could lock yourself out). */}
                     <select
                       value={u.role}
                       onChange={(e) => changeRole(u, e)}

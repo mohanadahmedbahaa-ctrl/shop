@@ -14,7 +14,6 @@ import { shippingOptions } from '../utils/pricing'
 
 const formatDate = (iso: string) => new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(new Date(iso))
 
-// /account/orders: the logged-in user's order history, from GET /api/orders/mine.
 function OrdersPage() {
   const { data: orders, status, error, reload } = useApiData<Order[]>('/api/orders/mine')
 
@@ -54,8 +53,6 @@ function OrdersPage() {
         <ul className="mt-8 space-y-4">
           {orders.map((order) => (
             <li key={order.id}>
-              {/* <details>/<summary> = a NATIVE expand/collapse. No useState needed, keyboard
-                  accessible for free. `group` + group-open: rotates the arrow when it's open. */}
               <details className="group rounded-2xl border border-stone-200">
                 <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-6 gap-y-2 p-5 [&::-webkit-details-marker]:hidden">
                   <div className="min-w-32">

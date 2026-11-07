@@ -1,8 +1,6 @@
 import type { ReactNode } from 'react'
 import { cn } from '../../utils/cn'
 
-// Centers content with a max width and consistent side padding on every page.
-// Using one component means every page lines up perfectly with the header.
 type Props = {
   children: ReactNode
   className?: string

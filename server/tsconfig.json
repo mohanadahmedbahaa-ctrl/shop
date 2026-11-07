@@ -1,6 +1,4 @@
 {
-  // Node 24 runs .ts files directly by STRIPPING the types (no build step).
-  // TypeScript is only used to CHECK the code: `npm run typecheck`.
   "compilerOptions": {
     "target": "es2024",
     "module": "nodenext",
@@ -10,10 +8,9 @@
     "noEmit": true,
     "skipLibCheck": true,
 
-    // Required for Node's type stripping:
-    "allowImportingTsExtensions": true, // imports end in .ts: import { pool } from './db.ts'
-    "erasableSyntaxOnly": true, // forbids TS features that can't just be deleted (enum, namespace...)
-    "verbatimModuleSyntax": true // type-only imports must say `import type`
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true
   },
   "include": ["src"]
 }

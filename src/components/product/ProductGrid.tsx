@@ -7,7 +7,6 @@ type Props = {
   columns?: 3 | 4
 }
 
-// 2 columns on phones (standard for shopping apps), more on bigger screens.
 function ProductGrid({ products, columns = 4 }: Props) {
   return (
     <div

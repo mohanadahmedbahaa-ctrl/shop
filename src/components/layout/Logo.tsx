@@ -1,6 +1,5 @@
 import { Link } from 'react-router'
 
-// The store's logo: a simple mark + wordmark. Reused in the header and the footer.
 function Logo({ onClick }: { onClick?: () => void }) {
   return (
     <Link to="/" onClick={onClick} className="flex items-center gap-2" aria-label="Oakline home">

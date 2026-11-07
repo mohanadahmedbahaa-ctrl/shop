@@ -7,18 +7,13 @@ import Container from '../ui/Container'
 
 type Props = {
   children: ReactNode
-  roles?: Role[] // leave out = any logged-in user
+  roles?: Role[]
 }
 
-// A ROUTE GUARD: wrap a page to protect it.
-//   <RequireAuth roles={['admin']}><UsersPage /></RequireAuth>
-// It only hides pages in the UI. The API checks permissions again on every request,
-// because anyone can call the API directly without using this React app.
 function RequireAuth({ children, roles }: Props) {
   const { user, status } = useAuth()
   const location = useLocation()
 
-  // 1. Still checking a saved token: wait. Redirecting now would send a logged-in user to /login.
   if (status === 'checking') {
     return (
       <div role="status" className="flex justify-center py-32 text-stone-500">
@@ -28,13 +23,10 @@ function RequireAuth({ children, roles }: Props) {
     )
   }
 
-  // 2. Not logged in: go to /login, and remember where they wanted to go (`from`).
-  //    The login page sends them back there afterwards.
   if (!user) {
     return <Navigate to="/login" state={{ from: location.pathname }} replace />
   }
 
-  // 3. Logged in but the wrong role: explain instead of a silent redirect.
   if (roles && !roles.includes(user.role)) {
     return (
       <Container className="flex flex-col items-center py-24 text-center">

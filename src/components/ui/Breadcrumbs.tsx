@@ -1,14 +1,11 @@
 import { ChevronRight } from 'lucide-react'
 import { Link } from 'react-router'
 
-// Breadcrumbs show WHERE you are: Home > Kitchen > Microwave Oven.
-// Items with `to` are links; the last item (the current page) has no link.
 type Crumb = { label: string; to?: string }
 
 function Breadcrumbs({ items }: { items: Crumb[] }) {
   return (
     <nav aria-label="Breadcrumb">
-      {/* HTML rule: an <ol> may only contain <li>, so the chevron goes INSIDE each <li>. */}
       <ol className="flex flex-wrap items-center gap-1.5 text-sm text-stone-500">
         {items.map((item, index) => (
           <li key={item.label} className="flex items-center gap-1.5">

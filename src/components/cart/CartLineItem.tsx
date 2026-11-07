@@ -7,11 +7,9 @@ import QuantitySelector from '../ui/QuantitySelector'
 
 type Props = {
   item: CartItem
-  // Called when the product link is clicked (the drawer passes closeCart so it closes).
   onNavigate?: () => void
 }
 
-// Used by BOTH the cart drawer and the cart page: write once, reuse everywhere.
 function CartLineItem({ item, onNavigate }: Props) {
   const { product, quantity } = item
   const { updateQuantity, removeFromCart } = useCart()
@@ -42,7 +40,6 @@ function CartLineItem({ item, onNavigate }: Props) {
         </div>
 
         <div className="mt-auto flex items-center justify-between pt-3">
-          {/* The SAME QuantitySelector as the product page. Here it updates context state. */}
           <QuantitySelector
             size="sm"
             value={quantity}

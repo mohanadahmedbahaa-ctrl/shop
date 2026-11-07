@@ -15,10 +15,8 @@ import { cn } from '../utils/cn'
 import { formatPrice } from '../utils/formatPrice'
 import { getOrderTotals, getShippingCost, shippingOptions, type ShippingMethod } from '../utils/pricing'
 
-// 1. The whole form in ONE state object. `&` combines the email with the address fields.
 type CheckoutForm = { email: string } & ShippingAddress
 
-// Partial<Record<K, string>> = "an object that MAY have a string message for each field".
 type FormErrors = Partial<Record<keyof CheckoutForm, string>>
 
 const initialForm: CheckoutForm = {
@@ -34,8 +32,6 @@ const initialForm: CheckoutForm = {
 
 const countries = ['United States', 'Canada', 'United Kingdom', 'Germany', 'France', 'Egypt', 'United Arab Emirates', 'Saudi Arabia']
 
-// 2. VALIDATION as a pure function: form in, errors out. Easy to test and reuse.
-//    The server validates everything AGAIN (routes/orders.ts): users can bypass frontend checks.
 function validate(form: CheckoutForm): FormErrors {
   const errors: FormErrors = {}
   if (!/^\S+@\S+\.\S+$/.test(form.email)) errors.email = 'Enter a valid email address'
@@ -51,28 +47,16 @@ function CheckoutPage() {
   const { items, subtotal, clearCart, status: cartStatus } = useCart()
   const { refresh: refreshProducts } = useProducts()
   const { user } = useAuth()
-  // Logged in? Start with your account's email filled in (lazy initial state, runs once).
   const [form, setForm] = useState<CheckoutForm>(() => ({ ...initialForm, email: user?.email ?? '' }))
   const [errors, setErrors] = useState<FormErrors>({})
   const [shippingMethod, setShippingMethod] = useState<ShippingMethod>('standard')
-  // Set once the order is placed. The redirect below then happens declaratively.
   const [placedOrder, setPlacedOrder] = useState<Order | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [serverError, setServerError] = useState<string | null>(null)
 
-  // 3. RULES OF HOOKS: every hook (useState, useCart...) must run on EVERY render, in the
-  //    same order. That's why these early returns come AFTER all the hooks above, never before.
-  //    <Navigate> redirects during render.
-  //
-  //    ORDER MATTERS: check `placedOrder` FIRST. Placing an order empties the cart, and if the
-  //    empty-cart check ran first it would send the user to /cart instead of the confirmation.
-  //    (A bug I hit while testing: calling navigate() and clearCart() in the same click
-  //    handler let the empty-cart redirect win.)
   if (placedOrder) {
     return <Navigate to="/order-confirmation" state={{ order: placedOrder }} replace />
   }
-  // A logged-in user's cart is still coming from the server (e.g. after a page refresh):
-  // wait, or the empty-cart check below would wrongly send them to /cart.
   if (cartStatus === 'loading') {
     return (
       <div role="status" className="flex justify-center py-32 text-stone-500">
@@ -87,12 +71,9 @@ function CheckoutPage() {
 
   const totals = getOrderTotals(subtotal, shippingMethod)
 
-  // 4. ONE change handler for ALL fields, thanks to each input's `name` attribute.
-  //    [name]: value is a "computed property name": { [name]: value } -> { city: 'Cairo' }.
   function handleChange(event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     const { name, value } = event.target
     setForm((prev) => ({ ...prev, [name]: value }))
-    // Clear that field's error as soon as the user starts fixing it.
     setErrors((prev) => ({ ...prev, [name]: undefined }))
   }
 
@@ -104,17 +85,12 @@ function CheckoutPage() {
 
     const firstInvalid = Object.keys(found)[0]
     if (firstInvalid) {
-      // Move focus to the first broken field. Users (and screen readers) land right on the problem.
       document.getElementsByName(firstInvalid)[0]?.focus()
       return
     }
 
-    // 5. Rest destructuring: take `email` out, put every other field into `shippingAddress`.
     const { email, ...shippingAddress } = form
 
-    // 6. SEND THE ORDER TO THE API. Notice what we DON'T send: prices or totals.
-    //    Only product ids and quantities; the server looks up the real prices, checks the stock,
-    //    and computes the totals itself (a user could edit any price in the browser).
     setSubmitting(true)
     try {
       const order = await apiFetch<Order>('/api/orders', {
@@ -126,16 +102,10 @@ function CheckoutPage() {
           items: items.map(({ product, quantity }) => ({ productId: product.id, quantity })),
         },
       })
-      // 7. Both updates happen in the same re-render: the <Navigate> above then passes the
-      //    SERVER's order (real order number, real totals) to the confirmation page through
-      //    navigation `state`. The server already emptied the saved cart; clearCart() empties
-      //    the screen. refreshProducts() re-downloads the catalog because stock just changed.
-      //    `submitting` stays true: this page is about to be left.
       setPlacedOrder(order)
       clearCart()
       refreshProducts()
     } catch (err) {
-      // e.g. 409 'Only 2 left of "Table Lamp"': the stock changed since the cart was filled.
       setServerError(err instanceof Error ? err.message : 'Could not place the order')
       setSubmitting(false)
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -149,7 +119,6 @@ function CheckoutPage() {
       <h1 className="mt-6 text-3xl font-semibold tracking-tight sm:text-4xl">Checkout</h1>
 
       <div className="mt-10 grid gap-12 lg:grid-cols-12">
-        {/* noValidate turns off the browser's popups so OUR messages show instead, styled consistently. */}
         <form id="checkout-form" noValidate onSubmit={handleSubmit} className="space-y-10 lg:col-span-7">
           {serverError && (
             <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -165,7 +134,7 @@ function CheckoutPage() {
               label="Email address"
               name="email"
               type="email"
-              autoComplete="email" // autoComplete lets the browser fill in saved details: much faster checkout
+              autoComplete="email"
               value={form.email}
               onChange={handleChange}
               error={errors.email}
@@ -206,12 +175,10 @@ function CheckoutPage() {
           <fieldset>
             <legend className="text-lg font-semibold">Delivery method</legend>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              {/* Object.entries turns { standard: {...}, express: {...} } into [key, value] pairs. */}
               {(Object.entries(shippingOptions) as [ShippingMethod, (typeof shippingOptions)[ShippingMethod]][]).map(
                 ([method, option]) => {
                   const cost = getShippingCost(subtotal, method)
                   return (
-                    // `has-checked:` (Tailwind v4) styles the card when the radio INSIDE it is checked.
                     <label
                       key={method}
                       className={cn(
@@ -269,8 +236,6 @@ function CheckoutPage() {
                 </li>
               ))}
             </ul>
-            {/* 7. The `form` attribute links this button to the <form id="checkout-form"> even
-                though it sits OUTSIDE the form element in the HTML. */}
             <Button type="submit" form="checkout-form" size="lg" className="w-full" disabled={submitting}>
               {submitting ? 'Placing order…' : `Place order · ${formatPrice(totals.total)}`}
             </Button>

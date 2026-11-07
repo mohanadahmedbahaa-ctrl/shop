@@ -8,21 +8,11 @@ import { buttonStyles } from '../ui/buttonStyles'
 import CartLineItem from './CartLineItem'
 import FreeShippingProgress from './FreeShippingProgress'
 
-// A "slide-over" cart: opens from the right when you add something or click the bag icon.
-// Customers see their cart without leaving the page they're shopping on.
 function CartDrawer() {
   const { items, itemCount, subtotal, isCartOpen, closeCart } = useCart()
 
-  // 1. useRef holds a reference to a real DOM element (here: the close button).
-  //    Changing a ref does NOT re-render, unlike state.
   const closeButtonRef = useRef<HTMLButtonElement>(null)
 
-  // 2. SIDE EFFECTS while the drawer is open:
-  //    - move keyboard focus into the drawer (accessibility)
-  //    - close with the Escape key
-  //    - stop the page behind it from scrolling
-  //    The function we RETURN is the CLEANUP. React runs it when the drawer closes
-  //    (or before the effect runs again), so we remove exactly what we added.
   useEffect(() => {
     if (!isCartOpen) return
 
@@ -43,13 +33,10 @@ function CartDrawer() {
   }, [isCartOpen, closeCart])
 
   return (
-    // 3. The drawer is ALWAYS rendered and toggled with CSS classes, so it can animate in and out.
-    //    `inert` while closed = can't be focused or clicked, and is hidden from screen readers.
     <div
       className={cn('fixed inset-0 z-50', isCartOpen ? 'visible' : 'invisible')}
       inert={!isCartOpen}
     >
-      {/* Dark overlay. Clicking it closes the drawer. */}
       <div
         onClick={closeCart}
         aria-hidden="true"
@@ -59,7 +46,6 @@ function CartDrawer() {
         )}
       />
 
-      {/* role="dialog" + aria-modal tells assistive tech this is a modal panel */}
       <aside
         role="dialog"
         aria-modal="true"
@@ -85,7 +71,6 @@ function CartDrawer() {
         </div>
 
         {items.length === 0 ? (
-          // EMPTY STATE: never show a blank panel. Explain and offer a next step.
           <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
             <div className="grid size-16 place-items-center rounded-full bg-stone-100">
               <ShoppingBag className="size-7 text-stone-400" aria-hidden="true" />
@@ -100,7 +85,6 @@ function CartDrawer() {
           </div>
         ) : (
           <>
-            {/* flex-1 + overflow-y-auto: only the item list scrolls; header and footer stay put */}
             <div className="flex-1 overflow-y-auto px-6">
               <div className="pt-5">
                 <FreeShippingProgress subtotal={subtotal} />

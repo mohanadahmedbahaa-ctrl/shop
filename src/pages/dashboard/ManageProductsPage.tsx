@@ -10,9 +10,6 @@ import { useProducts } from '../../context/ProductsContext'
 import { categoryInfo, type Product } from '../../data/products'
 import { formatPrice } from '../../utils/formatPrice'
 
-// /dashboard/products
-//   seller            -> sees and deletes only THEIR products
-//   moderator, admin  -> see and delete EVERY product (moderation)
 function ManageProductsPage() {
   const { user } = useAuth()
   const { products, removeProductFromList } = useProducts()
@@ -23,17 +20,14 @@ function ManageProductsPage() {
   const moderator = canModerate(user)
   const visible = moderator ? products : products.filter((p) => p.sellerId === user.id)
 
-  // Same rule as the server's DELETE route, used here only to show/hide the button.
   const canDelete = (p: Product) => moderator || p.sellerId === user.id
 
   async function handleDelete(product: Product) {
-    // confirm() = the browser's built-in yes/no dialog. Deleting can't be undone, so ask first.
     if (!window.confirm(`Delete "${product.title}"? This can't be undone.`)) return
     setError(null)
     setDeletingId(product.id)
     try {
       await apiFetch(`/api/products/${product.id}`, { method: 'DELETE' })
-      // Update the shared list so the shop, cart and this table all update at once.
       removeProductFromList(product.id)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not delete the product')
@@ -42,7 +36,6 @@ function ManageProductsPage() {
     }
   }
 
-  // Who sold it: the store, "You", or the seller's name from the API.
   const sellerLabel = (p: Product) => (p.sellerId === null ? 'Oakline' : p.sellerId === user.id ? 'You' : (p.sellerName ?? 'Unknown'))
 
   return (
@@ -77,14 +70,11 @@ function ManageProductsPage() {
           </Link>
         </div>
       ) : (
-        // 1. overflow-x-auto: on phones the table scrolls sideways instead of breaking the layout.
         <div className="mt-8 overflow-x-auto rounded-2xl border border-stone-200">
           <table className="w-full min-w-2xl text-left text-sm">
-            {/* <caption> names the table for screen readers; sr-only hides it visually */}
             <caption className="sr-only">{visible.length} products</caption>
             <thead className="bg-stone-50 text-xs uppercase tracking-wide text-stone-500">
               <tr>
-                {/* scope="col" tells assistive tech this header labels a column */}
                 <th scope="col" className="px-4 py-3 font-medium">Product</th>
                 <th scope="col" className="px-4 py-3 font-medium">Category</th>
                 <th scope="col" className="px-4 py-3 font-medium">Price</th>

@@ -9,12 +9,9 @@ const statuses = Object.keys(orderStatusLabels) as OrderStatus[]
 
 type Props = {
   orders: Order[]
-  // Called with the server's updated order, so the parent can update its list (and its totals).
   onOrderUpdated: (order: Order) => void
 }
 
-// Orders table for admins, with a status <select> per order.
-// Used on the dashboard (recent orders) and on /admin/orders (all orders).
 function AdminOrdersTable({ orders, onOrderUpdated }: Props) {
   const [savingId, setSavingId] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -22,15 +19,13 @@ function AdminOrdersTable({ orders, onOrderUpdated }: Props) {
 
   async function changeStatus(order: Order, event: ChangeEvent<HTMLSelectElement>) {
     const status = event.target.value as OrderStatus
-    // Cancelling gives the stock back and can't be undone, so ask first.
     if (status === 'cancelled' && !window.confirm(`Cancel ${order.orderNumber}? The items go back in stock. This can't be undone.`)) {
-      return // the <select> is controlled by order.status, which didn't change, so it snaps back
+      return
     }
     setError(null)
     setSavingId(order.id)
     try {
       onOrderUpdated(await apiFetch<Order>(`/api/orders/${order.id}/status`, { method: 'PATCH', body: { status } }))
-      // Cancelling put items back in stock: re-download the catalog so the shop shows it.
       if (status === 'cancelled') refreshProducts()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not update the order')
@@ -74,14 +69,12 @@ function AdminOrdersTable({ orders, onOrderUpdated }: Props) {
                   <p className="text-xs text-stone-500">{order.email}</p>
                 </td>
                 <td className="px-4 py-3 text-stone-600">
-                  {/* title attribute = the full list on hover */}
                   <span title={order.items.map((i) => `${i.quantity}× ${i.title}`).join('\n')}>
                     {order.items.reduce((n, i) => n + i.quantity, 0)} items
                   </span>
                 </td>
                 <td className="px-4 py-3 font-medium tabular-nums">{formatPrice(order.totals.total)}</td>
                 <td className="px-4 py-3">
-                  {/* Cancelled is final (the server refuses changes), so just show the badge. */}
                   {order.status === 'cancelled' ? (
                     <OrderStatusBadge status="cancelled" />
                   ) : (

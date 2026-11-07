@@ -9,14 +9,11 @@ import { cn } from '../utils/cn'
 
 type FormErrors = Partial<Record<keyof SignupData, string>>
 
-// 1. The two account types people can choose. Moderator and admin are NOT here on purpose:
-//    only an admin can give those roles (Manage users page). The server enforces the same rule.
 const accountTypes = [
   { value: 'buyer', title: 'Buyer', text: 'Shop and place orders', icon: ShoppingBag },
   { value: 'seller', title: 'Seller', text: 'Sell your own products on Oakline', icon: Store },
 ] as const
 
-// Same rules as the server (routes/auth.ts). Checking here too gives instant feedback.
 function validate(form: SignupData): FormErrors {
   const errors: FormErrors = {}
   if (!form.name.trim()) errors.name = 'Enter your name'
@@ -40,7 +37,6 @@ function SignupPage() {
     return <Navigate to="/account" replace />
   }
 
-  // One handler for every text field, using each input's `name` (same idea as CheckoutPage).
   function handleChange(event: ChangeEvent<HTMLInputElement>) {
     const { name, value } = event.target
     setForm((prev) => ({ ...prev, [name]: value }))
@@ -57,13 +53,8 @@ function SignupPage() {
     setSubmitting(true)
     try {
       const created = await signup(form)
-      // 2. Sellers go straight to adding their first product; buyers back to shopping.
-      //    `submitting` deliberately STAYS true on success: if we reset it, the
-      //    "already logged in -> /account" redirect above would win the race against this
-      //    navigation (React Router navigates in a low-priority transition).
       navigate(created.role === 'seller' ? '/dashboard/products/new' : (from ?? '/account'), { replace: true })
     } catch (err) {
-      // e.g. 409 "An account with this email already exists"
       setServerError(err instanceof Error ? err.message : 'Sign up failed')
       setSubmitting(false)
     }
@@ -82,8 +73,6 @@ function SignupPage() {
           </p>
         )}
 
-        {/* 3. Radio "cards": the real <input type="radio"> sits inside a <label>, so clicking anywhere
-            on the card selects it, and keyboard arrows still work. has-checked: styles the chosen card. */}
         <fieldset>
           <legend className="text-sm font-medium text-stone-700">I want to</legend>
           <div className="mt-2 grid grid-cols-2 gap-3">
@@ -114,7 +103,6 @@ function SignupPage() {
 
         <TextField label="Full name" name="name" autoComplete="name" value={form.name} onChange={handleChange} error={errors.name} />
         <TextField label="Email address" name="email" type="email" autoComplete="email" value={form.email} onChange={handleChange} error={errors.email} />
-        {/* autoComplete="new-password" tells password managers to SUGGEST a strong password */}
         <TextField
           label="Password"
           name="password"

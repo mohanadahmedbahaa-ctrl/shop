@@ -16,9 +16,8 @@ import { formatPrice } from '../utils/formatPrice'
 import { FREE_SHIPPING_THRESHOLD, getDiscountPercent } from '../utils/pricing'
 import NotFoundPage from './NotFoundPage'
 
-// 1. The ROUTE component only finds the product from the URL (/product/:id).
 function ProductPage() {
-  const { id } = useParams() // URL params are always strings: "3"
+  const { id } = useParams()
   const { products } = useProducts()
   const product = products.find((p) => p.id === Number(id))
 
@@ -26,9 +25,6 @@ function ProductPage() {
     return <NotFoundPage title="Product not found" message="This product doesn't exist or is no longer available." />
   }
 
-  // 2. `key={product.id}` is a trick worth knowing for interviews: when the key changes
-  //    (you click a related product), React throws away the old component and its state
-  //    and starts fresh. So quantity resets to 1 and the gallery goes back to image 1.
   return <ProductDetails key={product.id} product={product} />
 }
 
@@ -69,7 +65,6 @@ function ProductDetails({ product }: { product: Product }) {
             <div className="mt-4">
               <Rating rating={product.rating} reviewCount={product.reviewCount} size="md" />
             </div>
-            {/* Marketplace: products added by sellers show who sells them (sellerName comes from a SQL JOIN). */}
             <p className="mt-2 text-sm text-stone-500">
               Sold by <span className="font-medium text-stone-700">{product.sellerName ?? 'Oakline'}</span>
             </p>
@@ -85,14 +80,12 @@ function ProductDetails({ product }: { product: Product }) {
 
             <p className="mt-6 leading-relaxed text-stone-600">{product.description}</p>
 
-            {/* Stock status: a colored dot + text. Color alone isn't enough (color-blind users), so there's text too. */}
             <p className="mt-6 flex items-center gap-2 text-sm font-medium">
               <span className={`size-2 rounded-full ${lowStock ? 'bg-amber-500' : 'bg-emerald-500'}`} aria-hidden="true" />
               {lowStock ? `Only ${product.stock} left. Order soon.` : 'In stock and ready to ship'}
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              {/* The parent owns `quantity`; QuantitySelector only reports changes ("controlled"). */}
               <QuantitySelector value={quantity} onChange={setQuantity} max={product.stock} label="Quantity" />
               <Button size="lg" className="sm:flex-1" onClick={() => addToCart(product, quantity)}>
                 <ShoppingBag className="size-5" aria-hidden="true" />

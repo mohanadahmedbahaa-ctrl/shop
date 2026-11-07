@@ -6,14 +6,10 @@ type Props = {
   totals: OrderTotals
   title?: string
   shippingNote?: string
-  children?: ReactNode // slot for buttons under the totals (Checkout, Place order...)
+  children?: ReactNode
 }
 
-// "Composition": the summary doesn't know which button goes under it.
-// The cart page passes a Checkout link; checkout passes a Place-order button.
 function OrderSummary({ totals, title = 'Order summary', shippingNote, children }: Props) {
-  // useId: a unique id per summary. The "My orders" page shows several at once, and a fixed
-  // id="summary-heading" would be duplicated (ids must be unique, or aria-labelledby breaks).
   const headingId = useId()
   return (
     <section aria-labelledby={headingId} className="rounded-2xl bg-stone-50 p-6">
@@ -21,7 +17,6 @@ function OrderSummary({ totals, title = 'Order summary', shippingNote, children 
         {title}
       </h2>
 
-      {/* <dl> = a description list, the semantic HTML for label/value pairs */}
       <dl className="mt-6 space-y-3 text-sm">
         <div className="flex justify-between">
           <dt className="text-stone-600">Subtotal</dt>

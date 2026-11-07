@@ -9,8 +9,6 @@ import Logo from './Logo'
 function NewsletterForm() {
   const [subscribed, setSubscribed] = useState(false)
 
-  // type="email" + required = the BROWSER validates the address before onSubmit runs.
-  // There's no backend yet, so "subscribing" just shows a thank-you message.
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setSubscribed(true)
@@ -72,7 +70,6 @@ function Footer() {
 
       <div className="border-t border-stone-200">
         <Container className="flex flex-col gap-2 py-6 text-xs text-stone-500 sm:flex-row sm:justify-between">
-          {/* new Date().getFullYear() keeps the copyright year current automatically */}
           <p>© {new Date().getFullYear()} Oakline. A demo store, so no real orders are placed.</p>
           <p>Built with React, TypeScript &amp; Tailwind CSS · Product data from DummyJSON</p>
         </Container>

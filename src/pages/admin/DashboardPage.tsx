@@ -9,7 +9,6 @@ import { useApiData } from '../../hooks/useApiData'
 import type { Order } from '../../types/order'
 import { formatPrice } from '../../utils/formatPrice'
 
-// The shape of GET /api/admin/stats (server/src/routes/admin.ts)
 type Stats = {
   revenue: number
   orderCount: number
@@ -20,10 +19,8 @@ type Stats = {
   recentOrders: Order[]
 }
 
-// "1 seller" / "3 sellers"
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
 
-// /admin: the admin's overview. One request brings every number on the page.
 function DashboardPage() {
   const { data: stats, status, error, reload, setData } = useApiData<Stats>('/api/admin/stats')
 
@@ -48,7 +45,6 @@ function DashboardPage() {
 
   const userTotal = Object.values(stats.usersByRole).reduce((sum, n) => sum + (n ?? 0), 0)
 
-  // 1. Stat tiles are DATA rendered with .map(), like the nav links and the account tools.
   const tiles = [
     { label: 'Revenue', value: formatPrice(stats.revenue), note: 'excluding cancelled orders', icon: DollarSign },
     { label: 'Orders', value: stats.orderCount, note: `${stats.openOrders} waiting to ship`, icon: ShoppingCart },
@@ -56,9 +52,6 @@ function DashboardPage() {
     { label: 'Users', value: userTotal, note: plural(stats.usersByRole.seller ?? 0, 'seller'), icon: Users },
   ]
 
-  // 2. After a status change, swap that ONE order into the list right away (instant feedback),
-  //    then reload() in the background: revenue and stock change when an order is cancelled,
-  //    and only the server can compute them correctly.
   function handleOrderUpdated(updated: Order) {
     setData((prev) => prev && { ...prev, recentOrders: prev.recentOrders.map((o) => (o.id === updated.id ? updated : o)) })
     reload()
@@ -83,7 +76,6 @@ function DashboardPage() {
         </nav>
       </div>
 
-      {/* <dl>: each tile is a label (dt) + value (dd) pair */}
       <dl className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
         {tiles.map(({ label, value, note, icon: Icon }) => (
           <div key={label} className="rounded-2xl border border-stone-200 p-5">
@@ -147,7 +139,6 @@ function DashboardPage() {
                       <span>{roleLabels[role]}</span>
                       <span className="font-medium tabular-nums">{count}</span>
                     </div>
-                    {/* A simple bar: its width is the share of all users (inline style for a dynamic %) */}
                     <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-stone-100" aria-hidden="true">
                       <div className="h-full rounded-full bg-brand-600" style={{ width: `${userTotal ? (count / userTotal) * 100 : 0}%` }} />
                     </div>

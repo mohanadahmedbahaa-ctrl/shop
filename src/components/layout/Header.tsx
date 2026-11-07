@@ -9,8 +9,6 @@ import Container from '../ui/Container'
 import Logo from './Logo'
 import SearchForm from './SearchForm'
 
-// 1. Navigation is DATA, rendered with .map(). Adding a link = adding one object.
-//    `match` decides when a link is highlighted (the "active" state).
 type NavItem = { label: string; to: string; match: (params: URLSearchParams) => boolean }
 
 const navItems: NavItem[] = [
@@ -34,10 +32,8 @@ function Header() {
   const closeMenu = () => setMenuOpen(false)
 
   return (
-    // sticky + backdrop-blur: the header stays on top and slightly blurs what scrolls under it
     <header className="sticky top-0 z-40 border-b border-stone-200 bg-white/90 backdrop-blur">
       <Container className="flex h-16 items-center gap-2 xl:gap-8">
-        {/* Mobile menu button (hidden from xl up). aria-expanded tells screen readers if it's open. */}
         <button
           type="button"
           onClick={() => setMenuOpen((open) => !open)}
@@ -51,7 +47,6 @@ function Header() {
 
         <Logo onClick={closeMenu} />
 
-        {/* Desktop navigation */}
         <nav aria-label="Main" className="hidden xl:block">
           <ul className="flex items-center gap-6">
             {navItems.map((item) => (
@@ -75,7 +70,6 @@ function Header() {
         <div className="ml-auto flex items-center gap-1">
           <SearchForm className="hidden w-64 md:block" />
 
-          {/* On phones the search lives in the menu; this icon opens it. */}
           <button
             type="button"
             onClick={() => setMenuOpen(true)}
@@ -85,7 +79,6 @@ function Header() {
             <Search className="size-5" aria-hidden="true" />
           </button>
 
-          {/* Account: logged out -> /login, logged in -> /account (with a dot showing you're signed in) */}
           <Link
             to={user ? '/account' : '/login'}
             onClick={closeMenu}
@@ -112,7 +105,6 @@ function Header() {
         </div>
       </Container>
 
-      {/* 2. Mobile menu. Conditional rendering: it only exists in the page while open. */}
       {menuOpen && (
         <div id="mobile-menu" className="border-t border-stone-200 bg-white xl:hidden">
           <Container className="py-4">

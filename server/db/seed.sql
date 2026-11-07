@@ -1,16 +1,5 @@
--- =====================================================================
--- Oakline seed data: the 27 products from src/data/products.ts.
--- Run AFTER schema.sql:
---   psql -U postgres -d oakline -f server/db/seed.sql
--- =====================================================================
-
--- 1. TRANSACTION: BEGIN ... COMMIT makes the whole file ALL OR NOTHING.
---    If one INSERT fails (a typo, a broken CHECK), nothing is saved and you
---    don't end up with half a catalog.
 BEGIN;
 
--- 2. Categories FIRST: products point to them, so they must exist before any product.
---    One INSERT can add many rows: VALUES (...), (...), (...);
 INSERT INTO categories (slug, name, tagline, position) VALUES
   ('home', 'Home & Living', 'Pieces that make a house feel like home', 0),
   ('kitchen', 'Kitchen', 'Tools for everyday cooking', 1),
@@ -18,8 +7,6 @@ INSERT INTO categories (slug, name, tagline, position) VALUES
   ('accessories', 'Accessories', 'Bags, shades and watches', 3),
   ('sport', 'Sport', 'Gear for game day', 4);
 
--- 3. Products. Text uses single quotes; an apostrophe INSIDE text is written twice:
---    'Men''s Shirt' is stored as Men's Shirt. NULL = no compare_at_price (not on sale).
 INSERT INTO products (id, title, description, category, price, compare_at_price, rating, review_count, stock) VALUES
   (1, 'Bedside Table African Cherry',
    'The Bedside Table in African Cherry is a stylish and functional addition to your bedroom, providing convenient storage space and a touch of elegance.',
@@ -103,7 +90,6 @@ INSERT INTO products (id, title, description, category, price, compare_at_price,
    'The Basketball is a standard ball used in basketball games. It is designed for dribbling, shooting, and passing in the game of basketball, suitable for both indoor and outdoor play.',
    'sport', 14.99, NULL, 4.7, 152, 75);
 
--- 4. Images: one row per image. position 0 is the main image (images[0] in the frontend).
 INSERT INTO product_images (product_id, position, url) VALUES
   (1, 0, 'https://cdn.dummyjson.com/product-images/furniture/bedside-table-african-cherry/1.webp'),
   (1, 1, 'https://cdn.dummyjson.com/product-images/furniture/bedside-table-african-cherry/2.webp'),
@@ -186,9 +172,6 @@ INSERT INTO product_images (product_id, position, url) VALUES
   (26, 0, 'https://cdn.dummyjson.com/product-images/sports-accessories/tennis-racket/1.webp'),
   (27, 0, 'https://cdn.dummyjson.com/product-images/sports-accessories/basketball/1.webp');
 
--- 5. Because we inserted ids 1-27 OURSELVES, the identity counter still thinks the next id is 1.
---    The next new product would then crash with "duplicate key". setval moves the counter
---    to the highest id, so the next product gets 28.
 SELECT setval(pg_get_serial_sequence('products', 'id'), (SELECT MAX(id) FROM products));
 SELECT setval(pg_get_serial_sequence('product_images', 'id'), (SELECT MAX(id) FROM product_images));
 

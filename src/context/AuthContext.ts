@@ -1,7 +1,5 @@
-// Who is logged in? Shared with the header, the protected pages and checkout.
 import { createContext, useContext } from 'react'
 
-// 1. Same roles as the backend (server/src/types.ts) and the database CHECK constraint.
 export type Role = 'buyer' | 'seller' | 'moderator' | 'admin'
 
 export type User = {
@@ -19,10 +17,8 @@ export type SignupData = {
   accountType: 'buyer' | 'seller'
 }
 
-export type AuthContextValue = {
+type AuthContextValue = {
   user: User | null
-  // 'checking' while we ask the API whether a saved token is still valid.
-  // Protected pages wait for this, so a logged-in user isn't bounced to /login on refresh.
   status: 'checking' | 'ready'
   login: (email: string, password: string) => Promise<User>
   signup: (data: SignupData) => Promise<User>
@@ -39,9 +35,6 @@ export function useAuth(): AuthContextValue {
   return context
 }
 
-// 2. PERMISSIONS in one place, mirroring the backend rules.
-//    The UI uses these to SHOW or HIDE buttons. That's only for convenience:
-//    the real protection is on the server, which checks every request again.
 export const canManageProducts = (user: User | null) =>
   user?.role === 'seller' || user?.role === 'moderator' || user?.role === 'admin'
 

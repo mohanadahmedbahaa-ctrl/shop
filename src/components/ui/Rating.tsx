@@ -12,11 +12,7 @@ function Rating({ rating, reviewCount, size = 'sm' }: Props) {
 
   return (
     <div className="flex items-center gap-1.5">
-      {/* ACCESSIBILITY: screen readers read the label once ("Rated 4.5 out of 5")
-          instead of announcing five separate star icons. */}
       <div className="flex" role="img" aria-label={`Rated ${rating} out of 5`}>
-        {/* Array.from({ length: 5 }) makes [undefined x5] so we can .map() 5 times.
-            `_` is the convention for "I don't use this parameter". */}
         {Array.from({ length: 5 }, (_, i) => (
           <Star
             key={i}

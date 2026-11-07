@@ -60,12 +60,11 @@ Protected routes need the header `Authorization: Bearer <token>` (the token come
 ```
 server/
   db/schema.sql        tables (users, categories, products, product_images, cart_items, orders, order_items)
-  db/seed.sql          the 27 products (generated from the Phase 1 frontend data)
-  db/queries.sql       practice queries
+  db/seed.sql          categories and the 27 products
   src/index.ts         Express app: middleware, routes, error handler
   src/db.ts            the PostgreSQL connection pool
   src/auth.ts          password hashing, JWT tokens, requireAuth / requireRole middleware
-  src/pricing.ts       money rules in cents (the server's own copy: never trust client prices)
+  src/pricing.ts       money rules in cents (prices are never taken from the client)
   src/errors.ts        HttpError: throw it anywhere, the error handler sends its status
   src/routes/          one router per resource: products, categories, auth, users, cart, orders, admin
   src/scripts/setup-db.ts

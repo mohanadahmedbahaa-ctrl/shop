@@ -6,9 +6,6 @@ import Container from '../components/ui/Container'
 import { canManageProducts, canModerate, isAdmin, roleLabels, useAuth } from '../context/AuthContext'
 import { useProducts } from '../context/ProductsContext'
 
-// The page every logged-in user lands on. What it shows depends on the ROLE:
-// buyers see their profile; sellers, moderators and admins also get tool links.
-// (It's wrapped in <RequireAuth> in App.tsx, so `user` is never null here.)
 function AccountPage() {
   const { user, logout } = useAuth()
   const { products } = useProducts()
@@ -18,12 +15,6 @@ function AccountPage() {
   const myProductCount = products.filter((p) => p.sellerId === user.id).length
   const memberSince = new Intl.DateTimeFormat('en-US', { dateStyle: 'long' }).format(new Date(user.createdAt))
 
-  // A RACE between two state updates (same kind of bug as in CheckoutPage).
-  // This page is inside <RequireAuth>. React Router runs navigations inside a React
-  // TRANSITION (low priority), while logout()'s setUser(null) is URGENT. So React rendered
-  // "no user" while still on /account, and RequireAuth redirected to /login instead of home.
-  // startTransition puts BOTH updates in the same transition: React renders them together,
-  // so the user is already on "/" when they become logged out.
   function handleLogout() {
     startTransition(() => {
       navigate('/')
@@ -31,7 +22,6 @@ function AccountPage() {
     })
   }
 
-  // Tools are DATA filtered by permission, then rendered with .map() (like the header nav).
   const tools = [
     { show: true, to: '/account/orders', icon: Receipt, title: 'My orders', text: 'Track orders and see receipts' },
     {

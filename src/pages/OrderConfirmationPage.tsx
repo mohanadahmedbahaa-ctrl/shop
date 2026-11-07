@@ -8,9 +8,6 @@ import type { Order } from '../types/order'
 import { shippingOptions } from '../utils/pricing'
 
 function OrderConfirmationPage() {
-  // 1. Read the order that CheckoutPage passed with navigate(..., { state: { order } }).
-  //    `location.state` is typed `unknown`-ish, so we tell TypeScript what we expect,
-  //    and handle the case where someone opens this URL directly (no order: go home).
   const location = useLocation()
   const order = (location.state as { order?: Order } | null)?.order
 
@@ -19,7 +16,6 @@ function OrderConfirmationPage() {
   }
 
   const { shippingAddress: address } = order
-  // 2. Intl.DateTimeFormat formats dates for humans: "November 7, 2026"
   const placedOn = new Intl.DateTimeFormat('en-US', { dateStyle: 'long' }).format(new Date(order.placedAt))
 
   return (
@@ -40,7 +36,6 @@ function OrderConfirmationPage() {
       <div className="mt-12 grid gap-6 sm:grid-cols-2">
         <div className="rounded-2xl border border-stone-200 p-6">
           <h2 className="text-sm font-semibold">Shipping to</h2>
-          {/* <address> is the semantic HTML element for contact/postal info */}
           <address className="mt-3 text-sm not-italic leading-relaxed text-stone-600">
             {address.firstName} {address.lastName}
             <br />
@@ -74,7 +69,6 @@ function OrderConfirmationPage() {
         <Link to="/shop" className={buttonStyles('primary', 'lg')}>
           Continue shopping
         </Link>
-        {/* The order is saved in the database now, so it can be found again later. */}
         <Link to="/account/orders" className={buttonStyles('secondary', 'lg')}>
           View my orders
         </Link>

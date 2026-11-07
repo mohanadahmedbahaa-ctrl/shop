@@ -1,10 +1,6 @@
-// Filtering and sorting logic for the Shop page, kept OUT of the component.
-// Components should mostly describe UI; data logic in plain functions is easier to read and test.
 import { categories, type Category, type Product } from '../data/products'
 import { getDiscountPercent } from './pricing'
 
-// 1. `as const` makes TypeScript treat these as fixed literal values
-//    (id: 'under-25' instead of id: string), so we can derive exact types from them.
 export const priceRanges = [
   { id: 'under-25', label: 'Under $25', min: 0, max: 25 },
   { id: '25-50', label: '$25 – $50', min: 25, max: 50 },
@@ -20,10 +16,8 @@ export const sortOptions = [
   { id: 'discount', label: 'Biggest discount' },
 ] as const
 
-// 2. DERIVED TYPES: "the type of any `id` inside sortOptions".
-//    That gives 'featured' | 'price-asc' | ... and stays in sync automatically.
-export type SortId = (typeof sortOptions)[number]['id']
-export type PriceRangeId = (typeof priceRanges)[number]['id']
+type SortId = (typeof sortOptions)[number]['id']
+type PriceRangeId = (typeof priceRanges)[number]['id']
 
 export type ProductFilters = {
   query: string
@@ -34,10 +28,7 @@ export type ProductFilters = {
   sort: SortId
 }
 
-// 3. TYPE GUARDS: functions returning `value is X`.
-//    After `if (isCategory(v))`, TypeScript knows v is a Category, not just any string.
-//    Needed because URL values are untrusted strings: a user can type ?category=banana.
-export function isCategory(value: string | null): value is Category {
+function isCategory(value: string | null): value is Category {
   return categories.some((c) => c === value)
 }
 function isPriceRange(value: string | null): value is PriceRangeId {
@@ -47,8 +38,6 @@ function isSortId(value: string | null): value is SortId {
   return sortOptions.some((s) => s.id === value)
 }
 
-// 4. Turn the URL (?category=home&sort=price-asc) into a typed, VALIDATED filters object.
-//    Invalid values fall back to defaults instead of breaking the page.
 export function readFilters(params: URLSearchParams): ProductFilters {
   const category = params.get('category')
   const price = params.get('price')
@@ -78,9 +67,6 @@ export function applyFilters(list: Product[], filters: ProductFilters): Product[
     return true
   })
 
-  // 5. .toSorted() returns a NEW sorted array. Plain .sort() MUTATES the original array,
-  //    which would scramble our shared `products` data. A classic bug!
-  //    The compare function returns a negative number if a comes first, positive if b comes first.
   switch (filters.sort) {
     case 'price-asc':
       return filtered.toSorted((a, b) => a.price - b.price)

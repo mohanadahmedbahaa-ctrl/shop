@@ -9,24 +9,17 @@ function LoginPage() {
   const { user, login } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  // 1. Where to go after logging in: the page RequireAuth sent us from, or the account page.
   const from = (location.state as { from?: string } | null)?.from ?? '/account'
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
-  // 2. `submitting` disables the button while waiting, so a double click can't send two requests.
   const [submitting, setSubmitting] = useState(false)
 
-  // Already logged in (e.g. pressed Back after logging in): nothing to do here.
   if (user && !submitting) {
     return <Navigate to={from} replace />
   }
 
-  // 3. An ASYNC event handler: `await` pauses until the API answers.
-  //    try/catch: success -> navigate, failure -> show the server's message.
-  //    `submitting` is reset ONLY on failure. On success the page is about to be left, and
-  //    resetting it would let the "already logged in" redirect above race the navigation.
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError(null)
@@ -47,7 +40,6 @@ function LoginPage() {
       <p className="mt-2 text-stone-600">Log in to your Oakline account.</p>
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-5">
-        {/* role="alert": screen readers read the error out loud as soon as it appears */}
         {error && (
           <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
@@ -61,7 +53,6 @@ function LoginPage() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
-        {/* autoComplete="current-password" lets password managers fill it in */}
         <TextField
           label="Password"
           type="password"
@@ -82,7 +73,6 @@ function LoginPage() {
         </Link>
       </p>
 
-      {/* import.meta.env.DEV is true only with `npm run dev`. This hint never ships to production. */}
       {import.meta.env.DEV && (
         <div className="mt-10 rounded-xl border border-dashed border-stone-300 p-4 text-xs text-stone-500">
           <p className="font-medium text-stone-700">Demo accounts (created by npm run db:setup)</p>

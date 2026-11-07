@@ -18,11 +18,6 @@ import ProductPage from './pages/ProductPage'
 import ShopPage from './pages/ShopPage'
 import SignupPage from './pages/SignupPage'
 
-// NESTED ROUTES: the parent <Route element={<Layout />}> has no path of its own.
-// It renders the header/footer, and its <Outlet /> shows whichever child matches the URL.
-// `index` = the child shown at the parent's own path ("/").
-//
-// PROTECTED ROUTES: <RequireAuth> wraps pages that need a login, optionally limited to roles.
 function App() {
   return (
     <Routes>
@@ -31,8 +26,6 @@ function App() {
         <Route path="shop" element={<ShopPage />} />
         <Route path="product/:id" element={<ProductPage />} />
         <Route path="cart" element={<CartPage />} />
-        {/* Checkout needs an account: every order belongs to a user. RequireAuth sends guests
-            to /login and back here afterwards (their guest cart is merged into the account). */}
         <Route
           path="checkout"
           element={

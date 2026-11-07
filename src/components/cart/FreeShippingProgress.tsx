@@ -2,11 +2,8 @@ import { Truck } from 'lucide-react'
 import { formatPrice } from '../../utils/formatPrice'
 import { FREE_SHIPPING_THRESHOLD } from '../../utils/pricing'
 
-// A common e-commerce UX pattern: show how close the customer is to free shipping.
-// It nudges people to add one more item (it raises the "average order value").
 function FreeShippingProgress({ subtotal }: { subtotal: number }) {
   const remaining = FREE_SHIPPING_THRESHOLD - subtotal
-  // Clamp between 0 and 100 so the bar never overflows.
   const percent = Math.min(100, Math.max(0, (subtotal / FREE_SHIPPING_THRESHOLD) * 100))
 
   return (
@@ -23,7 +20,6 @@ function FreeShippingProgress({ subtotal }: { subtotal: number }) {
           </span>
         )}
       </p>
-      {/* A native <progress>-like bar built with divs. role="progressbar" + aria-value* keeps it accessible. */}
       <div
         role="progressbar"
         aria-valuemin={0}
@@ -32,7 +28,6 @@ function FreeShippingProgress({ subtotal }: { subtotal: number }) {
         aria-label="Progress to free shipping"
         className="mt-3 h-1.5 overflow-hidden rounded-full bg-brand-100"
       >
-        {/* Inline style is fine for truly dynamic values like a percentage. */}
         <div className="h-full rounded-full bg-brand-600 transition-all duration-500" style={{ width: `${percent}%` }} />
       </div>
     </div>

@@ -8,8 +8,6 @@ import TextField from '../../components/ui/TextField'
 import { useProducts } from '../../context/ProductsContext'
 import { categories, categoryInfo, type Category, type Product } from '../../data/products'
 
-// 1. Form inputs ALWAYS give strings ("19.99"), even type="number". So the form state is
-//    all strings, and we convert to numbers only when sending to the API.
 type ProductForm = {
   title: string
   description: string
@@ -17,7 +15,7 @@ type ProductForm = {
   price: string
   compareAtPrice: string
   stock: string
-  images: string // one URL per line in a <textarea>
+  images: string
 }
 type FormErrors = Partial<Record<keyof ProductForm, string>>
 
@@ -31,7 +29,6 @@ const initialForm: ProductForm = {
   images: '',
 }
 
-// "a\n\n b \n" -> ["a", "b"]: split into lines, trim spaces, drop empty lines.
 const parseImageUrls = (text: string) =>
   text
     .split('\n')
@@ -55,7 +52,6 @@ function validate(form: ProductForm): FormErrors {
   return errors
 }
 
-// Shared look for the <textarea> and <select>, which TextField (an <input>) can't cover.
 const fieldClass =
   'mt-1.5 block w-full rounded-lg border border-stone-300 bg-white px-3.5 py-2.5 text-sm shadow-xs outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-100'
 
@@ -88,7 +84,6 @@ function NewProductPage() {
 
     setSubmitting(true)
     try {
-      // 2. Convert the strings to the types the API expects. An empty "compare at" becomes null.
       const created = await apiFetch<Product>('/api/products', {
         method: 'POST',
         body: {
@@ -101,7 +96,6 @@ function NewProductPage() {
           images: parseImageUrls(form.images),
         },
       })
-      // 3. Add it to the shared catalog, then show the real product page.
       addProductToList(created)
       navigate(`/product/${created.id}`)
     } catch (err) {
@@ -162,7 +156,6 @@ function NewProductPage() {
           </div>
 
           <div className="grid gap-5 sm:grid-cols-3">
-            {/* inputMode="decimal" shows a number keyboard on phones; step lets cents be typed */}
             <TextField label="Price ($)" name="price" type="number" min="0" step="0.01" inputMode="decimal" value={form.price} onChange={handleChange} error={errors.price} />
             <TextField
               label="Compare at ($)"
@@ -207,7 +200,6 @@ function NewProductPage() {
           </Button>
         </form>
 
-        {/* 4. LIVE PREVIEW: derived from the form state on every keystroke, no extra state needed. */}
         <aside className="lg:col-span-5">
           <p className="text-sm font-medium text-stone-700">Preview</p>
           <div className="mt-2 aspect-[4/5] overflow-hidden rounded-2xl bg-stone-100">

@@ -7,10 +7,7 @@ type Props = {
   size?: 'sm' | 'lg'
 }
 
-// Shows the price, plus the old crossed-out price when the product is on sale.
 function Price({ product, size = 'sm' }: Props) {
-  // TypeScript remembers WHY `onSale` is true ("aliased condition"), so inside
-  // `onSale && ...` it knows compareAt is a number, not undefined.
   const compareAt = product.compareAtPrice
   const onSale = compareAt !== undefined && compareAt > product.price
 
@@ -19,8 +16,6 @@ function Price({ product, size = 'sm' }: Props) {
       <span className={cn('font-semibold', onSale && 'text-red-600', size === 'lg' ? 'text-3xl' : 'text-sm')}>
         {formatPrice(product.price)}
       </span>
-      {/* <s> = "no longer accurate" (strikethrough). sr-only text is read by
-          screen readers but hidden visually, so the meaning isn't lost. */}
       {onSale && (
         <s className={cn('text-stone-400', size === 'lg' ? 'text-lg' : 'text-xs')}>
           <span className="sr-only">Original price: </span>

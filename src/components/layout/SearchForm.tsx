@@ -5,7 +5,7 @@ import { cn } from '../../utils/cn'
 
 type Props = {
   className?: string
-  onSearch?: () => void // e.g. close the mobile menu after searching
+  onSearch?: () => void
 }
 
 function SearchForm({ className, onSearch }: Props) {
@@ -13,22 +13,16 @@ function SearchForm({ className, onSearch }: Props) {
   const [searchParams] = useSearchParams()
   const currentQuery = searchParams.get('q') ?? ''
 
-  // 1. UNCONTROLLED input: we don't keep it in state. We read it once, on submit,
-  //    with FormData (the browser's own API for reading a form's fields by `name`).
-  //    Fine here because we only need the value at the end, not on every keystroke.
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault() // stop the browser's default full page reload
+    event.preventDefault()
     const query = String(new FormData(event.currentTarget).get('q') ?? '').trim()
-    // encodeURIComponent makes text URL-safe: "a & b" -> "a%20%26%20b"
     navigate(query ? `/shop?q=${encodeURIComponent(query)}` : '/shop')
-    onSearch?.() // ?.() = call it only if it was passed
+    onSearch?.()
   }
 
   return (
     <form role="search" onSubmit={handleSubmit} className={cn('relative', className)}>
       <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-stone-400" aria-hidden="true" />
-      {/* 2. `key={currentQuery}`: when the URL's ?q= changes (e.g. "Clear filters"),
-          React re-creates the input, so defaultValue shows the new value. */}
       <input
         key={currentQuery}
         type="search"

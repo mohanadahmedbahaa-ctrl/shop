@@ -6,12 +6,8 @@ type AuthResponse = { token: string; user: User }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  // 1. If there's no saved token there's nothing to check, so we're "ready" immediately.
-  //    Lazy initial state: getToken() runs only on the first render.
   const [status, setStatus] = useState<'checking' | 'ready'>(() => (getToken() ? 'checking' : 'ready'))
 
-  // 2. On app start: a token in localStorage might be expired, or the user might have been
-  //    deleted or had their role changed. GET /api/auth/me asks the server who we really are.
   useEffect(() => {
     if (!getToken()) return
     let ignore = false
@@ -21,8 +17,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!ignore) setUser(me)
       })
       .catch((err) => {
-        // 401 = the token is no longer valid: forget it. Other errors (server down) keep it,
-        // so a temporary outage doesn't log everyone out.
         if (err instanceof ApiError && err.status === 401) setToken(null)
       })
       .finally(() => {
@@ -34,9 +28,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  // 3. login and signup both get { token, user } back: save the token, remember the user.
-  //    They RETURN the user so the page can redirect based on the role.
-  //    Errors (wrong password, email taken) are thrown on to the form, which shows the message.
   const login = useCallback(async (email: string, password: string) => {
     const data = await apiFetch<AuthResponse>('/api/auth/login', { method: 'POST', body: { email, password } })
     setToken(data.token)
@@ -51,9 +42,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return data.user
   }, [])
 
-  // 4. With JWTs, "logging out" just means the browser forgets the token.
-  //    (The token itself stays valid until it expires; real apps add a short expiry
-  //    or a server-side block list if that matters.)
   const logout = useCallback(() => {
     setToken(null)
     setUser(null)

@@ -7,9 +7,6 @@ type Props = InputHTMLAttributes<HTMLInputElement> & {
 }
 
 function TextField({ label, error, className, ...inputProps }: Props) {
-  // 1. useId creates a unique id per component instance, like ":r1:".
-  //    We need ids to connect <label htmlFor> to <input id>, and the error text
-  //    to the input via aria-describedby. Hardcoding ids would clash if reused.
   const id = useId()
   const errorId = `${id}-error`
 
@@ -20,7 +17,6 @@ function TextField({ label, error, className, ...inputProps }: Props) {
       </label>
       <input
         id={id}
-        // 2. aria-invalid + aria-describedby: screen readers say "invalid" and read the error.
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId : undefined}
         className={cn(

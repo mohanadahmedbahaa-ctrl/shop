@@ -1,16 +1,12 @@
 import { Minus, Plus } from 'lucide-react'
 import { cn } from '../../utils/cn'
 
-// A "CONTROLLED" component: it doesn't keep its own state.
-// The parent owns `value` and decides what happens in `onChange`.
-// That's why the SAME component works on the product page (local state)
-// and in the cart (context state).
 type Props = {
   value: number
   onChange: (value: number) => void
   max: number
   min?: number
-  label: string // for screen readers, e.g. "Quantity for Table Lamp"
+  label: string
   size?: 'sm' | 'md'
 }
 
@@ -21,7 +17,6 @@ function QuantitySelector({ value, onChange, max, min = 1, label, size = 'md' }:
   )
 
   return (
-    // role="group" + aria-label groups the 3 controls under one name for assistive tech
     <div
       role="group"
       aria-label={label}
@@ -36,7 +31,6 @@ function QuantitySelector({ value, onChange, max, min = 1, label, size = 'md' }:
       >
         <Minus className="size-4" aria-hidden="true" />
       </button>
-      {/* aria-live="polite": screen readers announce the new number when it changes */}
       <span className={cn('text-center font-medium tabular-nums', size === 'sm' ? 'w-6 text-sm' : 'w-8')} aria-live="polite">
         {value}
       </span>

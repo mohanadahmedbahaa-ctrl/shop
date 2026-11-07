@@ -2,8 +2,6 @@ import { Link } from 'react-router'
 import { buttonStyles } from '../components/ui/buttonStyles'
 import Container from '../components/ui/Container'
 
-// DEFAULT PROPS via destructuring: used for unknown URLs ("*" route) with the defaults,
-// and by ProductPage with a custom title and message.
 type Props = {
   title?: string
   message?: string

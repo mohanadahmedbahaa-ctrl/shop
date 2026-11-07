@@ -14,7 +14,6 @@ function CartPage() {
   const { items, itemCount, subtotal } = useCart()
   const { products } = useProducts()
   const popular = products.toSorted((a, b) => b.reviewCount - a.reviewCount).slice(0, 4)
-  // The summary uses the same pricing function as checkout, so the numbers always match.
   const totals = getOrderTotals(subtotal, 'standard')
 
   if (items.length === 0) {
@@ -32,7 +31,6 @@ function CartPage() {
           </Link>
         </div>
 
-        {/* An empty cart is a good place to suggest products instead of a dead end. */}
         <section className="mt-24">
           <h2 className="mb-8 text-2xl font-semibold tracking-tight">Popular right now</h2>
           <ProductGrid products={popular} />
@@ -46,7 +44,6 @@ function CartPage() {
       <title>{`Your cart (${itemCount}) · Oakline`}</title>
       <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Shopping cart</h1>
 
-      {/* 12-column grid: items take 7 columns, the summary 5, on large screens. */}
       <div className="mt-10 grid gap-12 lg:grid-cols-12">
         <section aria-label="Items in your cart" className="lg:col-span-7">
           <ul className="divide-y divide-stone-200 border-y border-stone-200">
