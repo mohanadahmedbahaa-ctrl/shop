@@ -10,6 +10,12 @@ The API runs on Vercel serverless functions and the database is PostgreSQL on Ne
 **Frontend:** React 19 · TypeScript · Tailwind CSS v4 · React Router · Vite
 **Backend:** Node.js · Express 5 · PostgreSQL · JWT authentication · bcrypt
 
+![Home page](docs/home.png)
+
+| Shop with filters | Product page |
+| --- | --- |
+| ![Shop page](docs/shop.png) | ![Product page](docs/product.png) |
+
 ## Features
 
 **Shopping**
@@ -76,6 +82,14 @@ server/                   REST API
 ```
 
 See [server/README.md](server/README.md) for the API endpoints.
+
+## Deployment
+
+- **Website:** Vercel static hosting, built with `npm run build`. `vercel.json` sends every path to `index.html`
+  so React Router can handle routes like `/shop` and `/cart`.
+- **API:** the `server/` folder as a second Vercel project (Express runs as a serverless function).
+- **Database:** PostgreSQL on Neon, connected to the API through the `DATABASE_URL` environment variable.
+- Every push to `main` redeploys both automatically.
 
 ## Credits
 
