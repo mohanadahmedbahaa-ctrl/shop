@@ -2,6 +2,11 @@
 
 A responsive online store with accounts, roles, a server-side cart, real orders and an admin dashboard.
 
+**Live demo:** https://shop-web-lime.vercel.app · **API:** https://shop-silk-gamma.vercel.app/api/products
+
+Demo login: `buyer@ecommerce.test`, `seller@ecommerce.test` or `admin@ecommerce.test` (ask me for the demo password).
+The API runs on Vercel serverless functions and the database is PostgreSQL on Neon.
+
 **Frontend:** React 19 · TypeScript · Tailwind CSS v4 · React Router · Vite
 **Backend:** Node.js · Express 5 · PostgreSQL · JWT authentication · bcrypt
 
