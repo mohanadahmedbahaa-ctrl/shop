@@ -48,7 +48,13 @@ const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
 }
 app.use(errorHandler)
 
-const port = Number(process.env.PORT ?? 3001)
-app.listen(port, () => {
-  console.log(`E-commerce API running on http://localhost:${port}`)
-})
+// On Vercel the platform runs the app for us (serverless), so we only export it.
+// Locally (and on normal servers) we start listening on a port ourselves.
+if (!process.env.VERCEL) {
+  const port = Number(process.env.PORT ?? 3001)
+  app.listen(port, () => {
+    console.log(`E-commerce API running on http://localhost:${port}`)
+  })
+}
+
+export default app
