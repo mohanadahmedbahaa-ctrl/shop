@@ -54,7 +54,7 @@ export async function fetchOrders(where: string, params: unknown[], limit?: numb
 function toOrder(row: OrderRow): Order {
   return {
     id: row.id,
-    orderNumber: `OAK-${row.id}`,
+    orderNumber: `EC-${row.id}`,
     userId: row.user_id,
     customerName: row.customer_name,
     email: row.email,

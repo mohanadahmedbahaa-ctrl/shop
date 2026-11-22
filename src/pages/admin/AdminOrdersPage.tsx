@@ -21,7 +21,7 @@ function AdminOrdersPage() {
 
   return (
     <Container className="py-10">
-      <title>All orders · Oakline</title>
+      <title>All orders · E-commerce</title>
       <Breadcrumbs items={[{ label: 'Dashboard', to: '/admin' }, { label: 'All orders' }]} />
       <h1 className="mt-6 text-3xl font-semibold tracking-tight">All orders</h1>
 

@@ -36,18 +36,18 @@ function ManageProductsPage() {
     }
   }
 
-  const sellerLabel = (p: Product) => (p.sellerId === null ? 'Oakline' : p.sellerId === user.id ? 'You' : (p.sellerName ?? 'Unknown'))
+  const sellerLabel = (p: Product) => (p.sellerId === null ? 'E-commerce' : p.sellerId === user.id ? 'You' : (p.sellerName ?? 'Unknown'))
 
   return (
     <Container className="py-10">
-      <title>{moderator ? 'Manage products' : 'My products'} · Oakline</title>
+      <title>{moderator ? 'Manage products' : 'My products'} · E-commerce</title>
       <Breadcrumbs items={[{ label: 'My account', to: '/account' }, { label: moderator ? 'Manage products' : 'My products' }]} />
 
       <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">{moderator ? 'Manage products' : 'My products'}</h1>
           <p className="mt-1 text-stone-600">
-            {moderator ? 'As a moderator you can remove any product from the store.' : 'Products you listed on Oakline.'}
+            {moderator ? 'As a moderator you can remove any product from the store.' : 'Products you listed in this store.'}
           </p>
         </div>
         <Link to="/dashboard/products/new" className={buttonStyles('primary', 'md')}>

@@ -11,7 +11,7 @@ type FormErrors = Partial<Record<keyof SignupData, string>>
 
 const accountTypes = [
   { value: 'buyer', title: 'Buyer', text: 'Shop and place orders', icon: ShoppingBag },
-  { value: 'seller', title: 'Seller', text: 'Sell your own products on Oakline', icon: Store },
+  { value: 'seller', title: 'Seller', text: 'Sell your own products in this store', icon: Store },
 ] as const
 
 function validate(form: SignupData): FormErrors {
@@ -62,7 +62,7 @@ function SignupPage() {
 
   return (
     <Container className="max-w-md py-16">
-      <title>Create account · Oakline</title>
+      <title>Create account · E-commerce</title>
       <h1 className="text-3xl font-semibold tracking-tight">Create your account</h1>
       <p className="mt-2 text-stone-600">Shop faster, or start selling your own products.</p>
 

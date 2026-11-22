@@ -50,7 +50,7 @@ function AccountPage() {
 
   return (
     <Container className="max-w-3xl py-12">
-      <title>My account · Oakline</title>
+      <title>My account · E-commerce</title>
 
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
@@ -95,7 +95,7 @@ function AccountPage() {
 
       {user.role === 'buyer' && (
         <p className="mt-8 text-sm text-stone-600">
-          Want to sell on Oakline? Ask an admin to make your account a seller account.{' '}
+          Want to sell in this store? Ask an admin to make your account a seller account.{' '}
           <Link to="/shop" className="font-medium text-brand-700 hover:underline">
             Continue shopping
           </Link>

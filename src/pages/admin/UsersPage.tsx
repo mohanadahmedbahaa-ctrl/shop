@@ -28,7 +28,7 @@ function UsersPage() {
 
   return (
     <Container className="py-10">
-      <title>Manage users · Oakline</title>
+      <title>Manage users · E-commerce</title>
       <Breadcrumbs items={[{ label: 'My account', to: '/account' }, { label: 'Manage users' }]} />
       <h1 className="mt-6 text-3xl font-semibold tracking-tight">Manage users</h1>
       <p className="mt-1 text-stone-600">

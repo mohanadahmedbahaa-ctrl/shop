@@ -1,0 +1,44 @@
+# Render Blueprint: creates the whole app (database + API + website) in one go.
+# Render reads this file when you click "New > Blueprint" and pick this repo.
+# Docs: https://render.com/docs/blueprint-spec
+
+databases:
+  - name: shop-db
+    plan: free
+    databaseName: ecommerce
+    user: ecommerce
+
+services:
+  # Express API (the server/ folder)
+  - type: web
+    name: shop-api
+    runtime: node
+    plan: free
+    rootDir: server
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: shop-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true # Render creates a random secret for you
+      - key: CLIENT_ORIGIN
+        sync: false # you type in the website URL, e.g. https://shop-web.onrender.com
+
+  # React frontend (the project root), served as static files
+  - type: web
+    name: shop-web
+    runtime: static
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false # you type in the API URL, e.g. https://shop-api.onrender.com
+    routes:
+      # Single page app: send every path (/shop, /cart, ...) to index.html so React Router handles it
+      - type: rewrite
+        source: /*
+        destination: /index.html

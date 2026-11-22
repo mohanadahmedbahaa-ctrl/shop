@@ -49,7 +49,7 @@ function ShopPage() {
 
   return (
     <Container className="pt-8">
-      <title>{`${heading} · Oakline`}</title>
+      <title>{`${heading} · E-commerce`}</title>
 
       <Breadcrumbs
         items={

@@ -10,7 +10,7 @@ type Props = {
 function NotFoundPage({ title = 'Page not found', message = "Sorry, we couldn't find the page you're looking for." }: Props) {
   return (
     <Container className="py-24 text-center">
-      <title>{`${title} · Oakline`}</title>
+      <title>{`${title} · E-commerce`}</title>
       <p className="text-sm font-semibold text-brand-700">404</p>
       <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">{title}</h1>
       <p className="mx-auto mt-4 max-w-md text-stone-600">{message}</p>

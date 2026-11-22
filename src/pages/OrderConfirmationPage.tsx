@@ -20,7 +20,7 @@ function OrderConfirmationPage() {
 
   return (
     <Container className="max-w-3xl pt-16">
-      <title>Order confirmed · Oakline</title>
+      <title>Order confirmed · E-commerce</title>
 
       <div className="text-center">
         <CircleCheck className="mx-auto size-14 text-emerald-600" aria-hidden="true" />

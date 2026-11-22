@@ -59,7 +59,7 @@ function DashboardPage() {
 
   return (
     <Container className="py-10">
-      <title>Admin dashboard · Oakline</title>
+      <title>Admin dashboard · E-commerce</title>
       <Breadcrumbs items={[{ label: 'My account', to: '/account' }, { label: 'Admin dashboard' }]} />
       <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
         <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>

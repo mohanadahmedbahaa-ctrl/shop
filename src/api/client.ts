@@ -10,7 +10,7 @@ export class ApiError extends Error {
   }
 }
 
-const TOKEN_KEY = 'oakline-token'
+const TOKEN_KEY = 'ecommerce-token'
 
 export const getToken = () => readStorage(TOKEN_KEY)
 

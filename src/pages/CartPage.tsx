@@ -19,7 +19,7 @@ function CartPage() {
   if (items.length === 0) {
     return (
       <Container className="pt-16">
-        <title>Your cart · Oakline</title>
+        <title>Your cart · E-commerce</title>
         <div className="flex flex-col items-center text-center">
           <div className="grid size-16 place-items-center rounded-full bg-stone-100">
             <ShoppingBag className="size-7 text-stone-400" aria-hidden="true" />
@@ -41,7 +41,7 @@ function CartPage() {
 
   return (
     <Container className="pt-10">
-      <title>{`Your cart (${itemCount}) · Oakline`}</title>
+      <title>{`Your cart (${itemCount}) · E-commerce`}</title>
       <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Shopping cart</h1>
 
       <div className="mt-10 grid gap-12 lg:grid-cols-12">

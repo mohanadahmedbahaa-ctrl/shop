@@ -106,7 +106,7 @@ function NewProductPage() {
 
   return (
     <Container className="max-w-5xl py-10">
-      <title>Add a product · Oakline</title>
+      <title>Add a product · E-commerce</title>
       <Breadcrumbs items={[{ label: 'My account', to: '/account' }, { label: 'Products', to: '/dashboard/products' }, { label: 'New' }]} />
       <h1 className="mt-6 text-3xl font-semibold tracking-tight">Add a product</h1>
 

@@ -19,7 +19,7 @@ function OrdersPage() {
 
   return (
     <Container className="max-w-3xl py-10">
-      <title>My orders · Oakline</title>
+      <title>My orders · E-commerce</title>
       <Breadcrumbs items={[{ label: 'My account', to: '/account' }, { label: 'My orders' }]} />
       <h1 className="mt-6 text-3xl font-semibold tracking-tight">My orders</h1>
 

@@ -7,7 +7,7 @@ import { CartContext, type CartItem, type CartLine } from './CartContext'
 import { useProducts } from './ProductsContext'
 import { readStorage, writeStorage } from '../utils/storage'
 
-const STORAGE_KEY = 'oakline-cart'
+const STORAGE_KEY = 'ecommerce-cart'
 
 function loadGuestCart(): CartLine[] {
   try {

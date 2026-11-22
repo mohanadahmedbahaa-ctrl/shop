@@ -1,4 +1,4 @@
-# Oakline: full stack e-commerce store
+# E-commerce: full stack online store
 
 A responsive online store with accounts, roles, a server-side cart, real orders and an admin dashboard.
 
@@ -52,8 +52,8 @@ npm install
 npm run dev               # http://localhost:5173
 ```
 
-Demo accounts (password = `DEMO_PASSWORD` in `server/.env`): `admin@oakline.test`,
-`moderator@oakline.test`, `seller@oakline.test`, `buyer@oakline.test`.
+Demo accounts (password = `DEMO_PASSWORD` in `server/.env`): `admin@ecommerce.test`,
+`moderator@ecommerce.test`, `seller@ecommerce.test`, `buyer@ecommerce.test`.
 
 ## Project structure
 

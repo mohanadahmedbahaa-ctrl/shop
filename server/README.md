@@ -1,6 +1,6 @@
-# Oakline API
+# E-commerce API
 
-REST API for the Oakline store: **Node.js + Express 5 + PostgreSQL**, written in TypeScript
+REST API for the E-commerce store: **Node.js + Express 5 + PostgreSQL**, written in TypeScript
 (run directly by Node 24, no build step). Accounts with **bcrypt** password hashing and **JWT** login tokens.
 
 ## Setup
@@ -24,8 +24,8 @@ npm run dev               # http://localhost:3001 (restarts on file changes)
 | moderator | everything a seller can, plus delete **any** product | an admin assigns it |
 | admin | everything, plus change any user's role | an admin assigns it (or a demo account) |
 
-Demo accounts (password = `DEMO_PASSWORD` in `.env`): `admin@oakline.test`, `moderator@oakline.test`,
-`seller@oakline.test`, `buyer@oakline.test`.
+Demo accounts (password = `DEMO_PASSWORD` in `.env`): `admin@ecommerce.test`, `moderator@ecommerce.test`,
+`seller@ecommerce.test`, `buyer@ecommerce.test`.
 
 ## Endpoints
 

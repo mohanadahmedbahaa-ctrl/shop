@@ -39,7 +39,7 @@ function ProductDetails({ product }: { product: Product }) {
 
   return (
     <>
-      <title>{`${product.title} · Oakline`}</title>
+      <title>{`${product.title} · E-commerce`}</title>
 
       <Container className="pt-8">
         <Breadcrumbs
@@ -66,7 +66,7 @@ function ProductDetails({ product }: { product: Product }) {
               <Rating rating={product.rating} reviewCount={product.reviewCount} size="md" />
             </div>
             <p className="mt-2 text-sm text-stone-500">
-              Sold by <span className="font-medium text-stone-700">{product.sellerName ?? 'Oakline'}</span>
+              Sold by <span className="font-medium text-stone-700">{product.sellerName ?? 'E-commerce'}</span>
             </p>
 
             <div className="mt-6 flex items-center gap-3">

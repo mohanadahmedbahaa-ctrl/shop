@@ -114,7 +114,7 @@ function CheckoutPage() {
 
   return (
     <Container className="pt-8">
-      <title>Checkout · Oakline</title>
+      <title>Checkout · E-commerce</title>
       <Breadcrumbs items={[{ label: 'Cart', to: '/cart' }, { label: 'Checkout' }]} />
       <h1 className="mt-6 text-3xl font-semibold tracking-tight sm:text-4xl">Checkout</h1>
 

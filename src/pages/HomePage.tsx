@@ -43,7 +43,7 @@ function HomePage() {
 
   return (
     <>
-      <title>Oakline · Everyday essentials</title>
+      <title>E-commerce · Everyday essentials</title>
 
       <Container className="pt-6">
         <section className="grid overflow-hidden rounded-3xl bg-stone-100 lg:grid-cols-2">

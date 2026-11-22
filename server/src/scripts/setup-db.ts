@@ -37,10 +37,10 @@ try {
   if (demoPassword) {
     const hash = await bcrypt.hash(demoPassword, 10)
     const demoUsers = [
-      ['Ada Admin', 'admin@oakline.test', 'admin'],
-      ['Mona Moderator', 'moderator@oakline.test', 'moderator'],
-      ['Sam Seller', 'seller@oakline.test', 'seller'],
-      ['Bob Buyer', 'buyer@oakline.test', 'buyer'],
+      ['Ada Admin', 'admin@ecommerce.test', 'admin'],
+      ['Mona Moderator', 'moderator@ecommerce.test', 'moderator'],
+      ['Sam Seller', 'seller@ecommerce.test', 'seller'],
+      ['Bob Buyer', 'buyer@ecommerce.test', 'buyer'],
     ]
     for (const [name, email, role] of demoUsers) {
       await client.query('INSERT INTO users (name, email, password_hash, role) VALUES ($1, $2, $3, $4)', [name, email, hash, role])
