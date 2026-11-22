@@ -76,3 +76,10 @@ server/                   REST API
 ```
 
 See [server/README.md](server/README.md) for the API endpoints.
+
+## Credits
+
+- Product names, descriptions and photos are demo data from [DummyJSON](https://dummyjson.com),
+  a free fake-data API for prototypes. They are placeholders, not real products for sale.
+- Font: [Inter](https://rsms.me/inter/) by Rasmus Andersson (SIL Open Font License), via Google Fonts.
+- Icons: [Lucide](https://lucide.dev) (ISC License).
